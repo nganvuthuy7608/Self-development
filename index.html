@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Self-development curriculum</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop') center/cover fixed;
+    }
+    .overlay { background: rgba(0,0,0,0.65); min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; font-size: 2.2rem; margin-bottom: 5px; }
+    .date { text-align:center; margin-bottom: 20px; font-size: 1.1rem; }
+    .card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+      border-radius: 18px;
+      padding: 20px;
+      margin: 15px auto;
+      max-width: 900px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: none;
+      font-size: 1rem;
+    }
+    button { cursor:pointer; background:#6c63ff; color:white; }
+    button:hover { opacity: .9; }
+    .task-item { display:flex; align-items:center; gap:10px; margin:8px 0; }
+    .task-item input[type='checkbox'] { width:auto; transform: scale(1.4); }
+    .small-btn { width:auto; padding:6px 10px; background:#ff5c5c; }
+    .celebrate {
+      display:none;
+      text-align:center;
+      font-size:2rem;
+      font-weight:bold;
+      animation: rainbow 1s infinite;
+      margin: 20px auto;
+      max-width: 900px;
+    }
+    @keyframes rainbow {
+      0% { color:#ff0000; transform:scale(1); }
+      25% { color:#ffff00; transform:scale(1.05); }
+      50% { color:#00ff00; transform:scale(1.1); }
+      75% { color:#00ffff; transform:scale(1.05); }
+      100% { color:#ff00ff; transform:scale(1); }
+    }
+    textarea { min-height: 100px; }
+  </style>
+</head>
+<body>
+<div class="overlay">
+  <h1>Self-development curriculum</h1>
+  <div class="date" id="today"></div>
+
+  <div class="card">
+    <h2>Xem dữ liệu ngày khác</h2>
+    <input type="date" id="historyDate" onchange="loadHistory(this.value)" />
+  </div>
+
+  <div class="card">
+    <h2>Daily Habit (lặp lại mỗi ngày)</h2>
+    <input id="habitInput" placeholder="Nhập habit mới..." />
+    <button onclick="addHabit()">+ Thêm habit</button>
+    <div id="habitList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Task phát sinh hôm nay</h2>
+    <input id="taskInput" placeholder="Nhập task phát sinh..." />
+    <button onclick="addTask()">+ Thêm task</button>
+    <div id="taskList"></div>
+  </div>
+
+  <div class="celebrate" id="celebrateMsg">
+    🎉 BẠN ĐÃ ĐẠT 80% HIỆU SUẤT TRONG NGÀY. BẠN THẬT GIỎI. NGÀY HÔM NAY CỦA BẠN THẬT NĂNG SUẤT. HÃY DUY TRÌ NHÉ! 🎉
+  </div>
+
+  <div class="card">
+    <h2>Nay mình học gì</h2>
+    <textarea id="studyWhat" placeholder="Hôm nay học gì..."></textarea>
+    <input id="studySource" placeholder="Nguồn học ở đâu..." />
+  </div>
+
+  <div class="card">
+    <h2>Nay mình đọc sách gì</h2>
+    <textarea id="bookRead" placeholder="Sách hôm nay..."></textarea>
+  </div>
+
+  <div class="card">
+    <h2>Note / Áp dụng những gì mình học</h2>
+    <textarea id="notes" placeholder="Ghi chú..."></textarea>
+  </div>
+</div>
+
+<script>
+const VN = 'Asia/Ho_Chi_Minh';
+function getTodayKey(){
+  return new Intl.DateTimeFormat('en-CA',{timeZone:VN}).format(new Date());
+}
+function nowVN(){
+  return new Date().toLocaleString('vi-VN',{timeZone:VN});
+}
+
+let habits = JSON.parse(localStorage.getItem('habits') || '[]');
+let daily = JSON.parse(localStorage.getItem('dailyData') || '{}');
+const today = getTodayKey();
+let selectedDate = today;
+if(!daily[selectedDate]) daily[selectedDate] = { tasks:[], checked:{}, studyWhat:'', studySource:'', bookRead:'', notes:'' };
+
+function ensureDate(date){
+  if(!daily[date]) daily[date] = { tasks:[], checked:{}, studyWhat:'', studySource:'', bookRead:'', notes:'' };
+}
+
+function save(){
+  daily[selectedDate].studyWhat = document.getElementById('studyWhat').value;
+  daily[selectedDate].studySource = document.getElementById('studySource').value;
+  daily[selectedDate].bookRead = document.getElementById('bookRead').value;
+  daily[selectedDate].notes = document.getElementById('notes').value;
+  localStorage.setItem('habits', JSON.stringify(habits));
+  localStorage.setItem('dailyData', JSON.stringify(daily));
+  render();
+}
+
+function addHabit(){
+  const v = document.getElementById('habitInput').value.trim();
+  if(!v) return;
+  habits.push(v);
+  document.getElementById('habitInput').value='';
+  save();
+}
+
+function addTask(){
+  const v = document.getElementById('taskInput').value.trim();
+  if(!v) return;
+  daily[selectedDate].tasks.push(v);
+  document.getElementById('taskInput').value='';
+  save();
+}
+
+function toggle(key){
+  daily[selectedDate].checked[key] = !daily[selectedDate].checked[key];
+  save();
+}
+
+function removeTask(i){
+  daily[selectedDate].tasks.splice(i,1);
+  save();
+}
+
+function removeHabit(i){
+  habits.splice(i,1);
+  save();
+}
+
+function loadHistory(date){
+  selectedDate = date || today;
+  ensureDate(selectedDate);
+  render();
+}
+
+function render(){
+  ensureDate(selectedDate);
+  document.getElementById('historyDate').value = selectedDate;
+  document.getElementById('today').innerText = 'Giờ Việt Nam: ' + nowVN() + ' | Đang xem dữ liệu ngày: ' + selectedDate;
+  let total=0, done=0;
+
+  const h = document.getElementById('habitList');
+  h.innerHTML='';
+  habits.forEach((x,i)=>{
+    const k='habit_'+i; total++; if(daily[selectedDate].checked[k]) done++;
+    h.innerHTML += `<div class='task-item'><input type='checkbox' ${daily[selectedDate].checked[k]?'checked':''} onchange='toggle("${k}")'><span>${x}</span><button class='small-btn' onclick='removeHabit(${i})'>X</button></div>`;
+  });
+
+  const t = document.getElementById('taskList');
+  t.innerHTML='';
+  daily[selectedDate].tasks.forEach((x,i)=>{
+    const k='task_'+i; total++; if(daily[selectedDate].checked[k]) done++;
+    t.innerHTML += `<div class='task-item'><input type='checkbox' ${daily[selectedDate].checked[k]?'checked':''} onchange='toggle("${k}")'><span>${x}</span><button class='small-btn' onclick='removeTask(${i})'>X</button></div>`;
+  });
+
+  document.getElementById('studyWhat').value = daily[selectedDate].studyWhat || '';
+  document.getElementById('studySource').value = daily[selectedDate].studySource || '';
+  document.getElementById('bookRead').value = daily[selectedDate].bookRead || '';
+  document.getElementById('notes').value = daily[selectedDate].notes || '';
+
+  const rate = total ? done/total : 0;
+  document.getElementById('celebrateMsg').style.display = rate >= 0.8 ? 'block' : 'none';
+}
+
+['studyWhat','studySource','bookRead','notes'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target.id===id) save(); });
+});
+
+render();
+setInterval(()=>document.getElementById('today').innerText='Giờ Việt Nam: '+nowVN(),1000);
+</script>
+</body>
+</html>
