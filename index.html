@@ -104,6 +104,7 @@
 
 <script>
 const VN = 'Asia/Ho_Chi_Minh';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyT5OHpPf1VtaCxjfZgPZSNsZidLwZ5UQadYOozokC4aF1IkNGYIabXYbXw2qyL58iZ/exec';
 function getTodayKey(){
   return new Intl.DateTimeFormat('en-CA',{timeZone:VN}).format(new Date());
 }
@@ -128,6 +129,7 @@ function save(){
   daily[selectedDate].notes = document.getElementById('notes').value;
   localStorage.setItem('habits', JSON.stringify(habits));
   localStorage.setItem('dailyData', JSON.stringify(daily));
+  cloudSave();
   render();
 }
 
@@ -201,7 +203,32 @@ function render(){
   document.addEventListener('input', e=>{ if(e.target.id===id) save(); });
 });
 
-render();
+async function cloudSave() {
+
+  await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(daily)
+  });
+
+}
+
+async function cloudLoad() {
+
+  const res = await fetch(API_URL);
+
+  const text = await res.text();
+
+  if(text){
+
+    daily = JSON.parse(text);
+
+    render();
+
+  }
+
+}
+
+cloudLoad();
 setInterval(()=>document.getElementById('today').innerText='Giờ Việt Nam: '+nowVN(),1000);
 </script>
 </body>
