@@ -249,7 +249,7 @@
 const VN = 'Asia/Ho_Chi_Minh';
 
 const API_URL =
-'https://script.google.com/macros/s/AKfycbwB78AW8JekA_m0xOOeSNMpP9GX5gJvVA9MkY87p3Pa6HtYwjb1zMRvnHOnz0W0dkbp/exec';
+'https://script.google.com/macros/s/AKfycbxux3NlNXTYKgxI7fybDTemPxN4thuEFsgnOaJ_Gyz2smdiqhrtHjBDcmwApXmqX1w/exec';
 
 function getTodayKey(){
 
@@ -350,7 +350,7 @@ async function cloudSave(){
 
 }
 
-function save(){
+async function save(){
 
   ensureDate(selectedDate);
 
@@ -368,7 +368,7 @@ function save(){
 
   saveLocal();
 
-  cloudSave();
+  await cloudSave();
 
   render();
 
@@ -456,68 +456,107 @@ function loadHistory(date){
 }
 
 function render(){
+
   ensureDate(selectedDate);
-  document.getElementById('historyDate').value = selectedDate;
 
-  let total = 0, done = 0;
+  document.getElementById(
+    'historyDate'
+  ).value = selectedDate;
 
-  // render habits
-  const h = document.getElementById('habitList');
-  h.innerHTML = '';
+  let total = 0;
+  let done = 0;
+
+  // habits
+  const h =
+    document.getElementById('habitList');
+
+  h.innerHTML='';
+
   habits.forEach((x,i)=>{
+
     const k = 'habit_'+i;
+
     total++;
-    if(daily[selectedDate].checked[k]) done++;
+
+    if(
+      daily[selectedDate].checked[k]
+    ){
+      done++;
+    }
+
     h.innerHTML += `
       <div class='task-item'>
-        <input type='checkbox' ${daily[selectedDate].checked[k]?'checked':''} onchange='toggle("${k}")'>
+
+        <input
+          type='checkbox'
+          ${
+            daily[selectedDate].checked[k]
+            ? 'checked'
+            : ''
+          }
+          onchange='toggle("${k}")'
+        >
+
         <span>${x}</span>
-        <button class='small-btn' onclick='removeHabit(${i})'>X</button>
-      </div>`;
+
+        <button
+          class='small-btn'
+          onclick='removeHabit(${i})'
+        >
+          X
+        </button>
+
+      </div>
+    `;
+
   });
 
-  // render tasks
-  const t = document.getElementById('taskList');
-  t.innerHTML = '';
+  // tasks
+  const t =
+    document.getElementById('taskList');
+
+  t.innerHTML='';
+
   daily[selectedDate].tasks.forEach((x,i)=>{
+
     const k = 'task_'+i;
+
     total++;
-    if(daily[selectedDate].checked[k]) done++;
+
+    if(
+      daily[selectedDate].checked[k]
+    ){
+      done++;
+    }
+
     t.innerHTML += `
       <div class='task-item'>
-        <input type='checkbox' ${daily[selectedDate].checked[k]?'checked':''} onchange='toggle("${k}")'>
+
+        <input
+          type='checkbox'
+          ${
+            daily[selectedDate].checked[k]
+            ? 'checked'
+            : ''
+          }
+          onchange='toggle("${k}")'
+        >
+
         <span>${x}</span>
-        <button class='small-btn' onclick='removeTask(${i})'>X</button>
-      </div>`;
+
+        <button
+          class='small-btn'
+          onclick='removeTask(${i})'
+        >
+          X
+        </button>
+
+      </div>
+    `;
+
   });
 
-  // render study items (phần mới)
-  const s = document.getElementById('studyList');
-  s.innerHTML = '';
-  daily[selectedDate].studyItems.forEach((item,i)=>{
-    const source = item.studySource.trim();
-    const isLink = source.startsWith('http://') || source.startsWith('https://');
-    s.innerHTML += `
-      <div class='task-item' style="flex-direction:column;align-items:flex-start">
-        <textarea placeholder="Hôm nay học gì..." oninput='updateStudyItem(${i},"studyWhat",this.value)'>${item.studyWhat||''}</textarea>
-        ${
-          isLink
-          ? `<a href="${source}" target="_blank">${source}</a>`
-          : `<input placeholder="Nguồn học..." value="${source||''}" oninput='updateStudyItem(${i},"studySource",this.value)'>`
-        }
-      </div>`;
-  });
-
-  // render bookRead + notes
-  document.getElementById('bookRead').value = daily[selectedDate].bookRead || '';
-  document.getElementById('notes').value = daily[selectedDate].notes || '';
-
-  // celebrate
-  const rate = total ? done/total : 0;
-  document.getElementById('celebrateMsg').style.display = rate >= 0.8 ? 'block' : 'none';
-}
-
-
+  // text
   document.getElementById(
     'studyWhat'
   ).value =
@@ -538,6 +577,7 @@ function render(){
   ).value =
   daily[selectedDate].notes || '';
 
+  // celebrate
   const rate =
     total
     ? done / total
@@ -579,7 +619,9 @@ async function cloudLoad(){
   try{
 
     const res =
-      await fetch(API_URL);
+     await fetch(
+      API_URL + '?t=' + Date.now()
+     );
 
     const text =
       await res.text();
