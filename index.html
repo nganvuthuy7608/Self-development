@@ -6,6 +6,7 @@
   <title>Self-development curriculum</title>
 
   <style>
+
     *{
       box-sizing:border-box;
     }
@@ -68,6 +69,7 @@
 
     textarea{
       min-height:100px;
+      resize:vertical;
     }
 
     button{
@@ -102,6 +104,63 @@
       background:#ff5c5c;
     }
 
+    .secondary-btn{
+      background:#4caf50;
+    }
+
+    .source-btn{
+      background:#2196f3;
+      width:auto;
+      padding:8px 14px;
+      margin-top:10px;
+    }
+
+    .study-block{
+      background:rgba(255,255,255,0.08);
+      border-radius:14px;
+      padding:16px;
+      margin-top:18px;
+    }
+
+    .study-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .study-title{
+      font-size:1.05rem;
+      font-weight:bold;
+    }
+
+    .source-item{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .source-item input{
+      flex:1;
+      min-width:220px;
+    }
+
+    .source-link{
+      display:inline-block;
+      margin-top:4px;
+      color:#9ad1ff;
+      text-decoration:underline;
+      word-break:break-all;
+      font-size:.95rem;
+    }
+
+    .source-link:hover{
+      color:#ffffff;
+    }
+
     .celebrate{
       display:none;
 
@@ -116,6 +175,7 @@
     }
 
     @keyframes rainbow{
+
       0%{
         color:#ff0000;
         transform:scale(1);
@@ -140,6 +200,7 @@
         color:#ff00ff;
         transform:scale(1);
       }
+
     }
 
   </style>
@@ -154,6 +215,7 @@
   <div class="date" id="today"></div>
 
   <div class="card">
+
     <h2>Xem dữ liệu ngày khác</h2>
 
     <input
@@ -161,6 +223,7 @@
       id="historyDate"
       onchange="loadHistory(this.value)"
     />
+
   </div>
 
   <div class="card">
@@ -198,25 +261,26 @@
   </div>
 
   <div class="celebrate" id="celebrateMsg">
+
     🎉 BẠN ĐÃ ĐẠT 80% HIỆU SUẤT TRONG NGÀY.
     BẠN THẬT GIỎI.
     NGÀY HÔM NAY CỦA BẠN THẬT NĂNG SUẤT.
     HÃY DUY TRÌ NHÉ! 🎉
+
   </div>
 
   <div class="card">
 
     <h2>Nay mình học gì</h2>
 
-    <textarea
-      id="studyWhat"
-      placeholder="Hôm nay học gì..."
-    ></textarea>
+    <div id="studyContainer"></div>
 
-    <input
-      id="studySource"
-      placeholder="Nguồn học ở đâu..."
-    />
+    <button
+      class="secondary-btn"
+      onclick="addStudyBlock()"
+    >
+      + Thêm phần học mới
+    </button>
 
   </div>
 
@@ -249,7 +313,7 @@
 const VN = 'Asia/Ho_Chi_Minh';
 
 const API_URL =
-'https://script.google.com/macros/s/AKfycbxux3NlNXTYKgxI7fybDTemPxN4thuEFsgnOaJ_Gyz2smdiqhrtHjBDcmwApXmqX1w/exec';
+'https://script.google.com/macros/s/AKfycbwB78AW8JekA_m0xOOeSNMpP9GX5gJvVA9MkY87p3Pa6HtYwjb1zMRvnHOnz0W0dkbp/exec';
 
 function getTodayKey(){
 
@@ -280,13 +344,27 @@ const today = getTodayKey();
 
 let selectedDate = today;
 
+function createStudyBlock(){
+
+  return {
+    topic:'',
+    sources:[
+      ''
+    ]
+  };
+
+}
+
 function createEmptyDay(){
 
   return {
     tasks:[],
     checked:{},
-    studyWhat:'',
-    studySource:'',
+
+    studyItems:[
+      createStudyBlock()
+    ],
+
     bookRead:'',
     notes:''
   };
@@ -298,6 +376,14 @@ function ensureDate(date){
   if(!daily[date]){
 
     daily[date] = createEmptyDay();
+
+  }
+
+  if(!daily[date].studyItems){
+
+    daily[date].studyItems = [
+      createStudyBlock()
+    ];
 
   }
 
@@ -321,13 +407,9 @@ async function cloudSave(){
 
   try{
 
-    const res = await fetch(API_URL,{
+    await fetch(API_URL,{
 
       method:'POST',
-
-      headers:{
-        'Content-Type':'application/json'
-      },
 
       body:JSON.stringify({
         habits,
@@ -336,13 +418,7 @@ async function cloudSave(){
 
     });
 
-    const text = await res.text();
-
-    alert('SAVE OK: ' + text);
-
   }catch(err){
-
-    alert('SAVE ERROR: ' + err);
 
     console.log(err);
 
@@ -350,25 +426,11 @@ async function cloudSave(){
 
 }
 
-async function save(){
-
-  ensureDate(selectedDate);
-
-  daily[selectedDate].studyWhat =
-    document.getElementById('studyWhat').value;
-
-  daily[selectedDate].studySource =
-    document.getElementById('studySource').value;
-
-  daily[selectedDate].bookRead =
-    document.getElementById('bookRead').value;
-
-  daily[selectedDate].notes =
-    document.getElementById('notes').value;
+function save(){
 
   saveLocal();
 
-  await cloudSave();
+  cloudSave();
 
   render();
 
@@ -445,6 +507,95 @@ function removeHabit(i){
 
 }
 
+function addStudyBlock(){
+
+  ensureDate(selectedDate);
+
+  daily[selectedDate].studyItems.push(
+    createStudyBlock()
+  );
+
+  save();
+
+}
+
+function removeStudyBlock(index){
+
+  ensureDate(selectedDate);
+
+  if(
+    daily[selectedDate].studyItems.length === 1
+  ){
+    return;
+  }
+
+  daily[selectedDate].studyItems.splice(index,1);
+
+  save();
+
+}
+
+function addSource(studyIndex){
+
+  ensureDate(selectedDate);
+
+  daily[selectedDate]
+  .studyItems[studyIndex]
+  .sources.push('');
+
+  save();
+
+}
+
+function removeSource(studyIndex,sourceIndex){
+
+  ensureDate(selectedDate);
+
+  const sources =
+    daily[selectedDate]
+    .studyItems[studyIndex]
+    .sources;
+
+  if(sources.length === 1){
+    return;
+  }
+
+  sources.splice(sourceIndex,1);
+
+  save();
+
+}
+
+function updateStudyTopic(index,value){
+
+  ensureDate(selectedDate);
+
+  daily[selectedDate]
+  .studyItems[index]
+  .topic = value;
+
+  saveLocal();
+  cloudSave();
+
+}
+
+function updateSource(
+  studyIndex,
+  sourceIndex,
+  value
+){
+
+  ensureDate(selectedDate);
+
+  daily[selectedDate]
+  .studyItems[studyIndex]
+  .sources[sourceIndex] = value;
+
+  saveLocal();
+  cloudSave();
+
+}
+
 function loadHistory(date){
 
   selectedDate = date || today;
@@ -452,6 +603,145 @@ function loadHistory(date){
   ensureDate(selectedDate);
 
   render();
+
+}
+
+function formatUrl(url){
+
+  if(!url) return '';
+
+  if(
+    url.startsWith('http://')
+    ||
+    url.startsWith('https://')
+  ){
+    return url;
+  }
+
+  return 'https://' + url;
+
+}
+
+function renderStudyItems(){
+
+  const container =
+    document.getElementById(
+      'studyContainer'
+    );
+
+  container.innerHTML = '';
+
+  daily[selectedDate]
+  .studyItems
+  .forEach((item,studyIndex)=>{
+
+    let sourcesHtml = '';
+
+    item.sources.forEach(
+      (source,sourceIndex)=>{
+
+      const finalUrl =
+        formatUrl(source);
+
+      sourcesHtml += `
+
+        <div class="source-item">
+
+          <input
+            placeholder="Nguồn học ở đâu..."
+            value="${source.replace(/"/g,'&quot;')}"
+            oninput="
+              updateSource(
+                ${studyIndex},
+                ${sourceIndex},
+                this.value
+              )
+            "
+          />
+
+          <button
+            class="small-btn"
+            onclick="
+              removeSource(
+                ${studyIndex},
+                ${sourceIndex}
+              )
+            "
+          >
+            X
+          </button>
+
+        </div>
+
+        ${
+          source.trim()
+          ? `
+            <a
+              class="source-link"
+              href="${finalUrl}"
+              target="_blank"
+            >
+              🔗 ${source}
+            </a>
+          `
+          : ''
+        }
+
+      `;
+
+    });
+
+    container.innerHTML += `
+
+      <div class="study-block">
+
+        <div class="study-header">
+
+          <div class="study-title">
+            Nội dung học #${studyIndex + 1}
+          </div>
+
+          <button
+            class="small-btn"
+            onclick="
+              removeStudyBlock(
+                ${studyIndex}
+              )
+            "
+          >
+            Xóa
+          </button>
+
+        </div>
+
+        <textarea
+          placeholder="Hôm nay học gì..."
+          oninput="
+            updateStudyTopic(
+              ${studyIndex},
+              this.value
+            )
+          "
+        >${item.topic}</textarea>
+
+        ${sourcesHtml}
+
+        <button
+          class="source-btn"
+          onclick="
+            addSource(
+              ${studyIndex}
+            )
+          "
+        >
+          + Thêm nguồn học
+        </button>
+
+      </div>
+
+    `;
+
+  });
 
 }
 
@@ -466,9 +756,10 @@ function render(){
   let total = 0;
   let done = 0;
 
-  // habits
   const h =
-    document.getElementById('habitList');
+    document.getElementById(
+      'habitList'
+    );
 
   h.innerHTML='';
 
@@ -479,18 +770,21 @@ function render(){
     total++;
 
     if(
-      daily[selectedDate].checked[k]
+      daily[selectedDate]
+      .checked[k]
     ){
       done++;
     }
 
     h.innerHTML += `
+
       <div class='task-item'>
 
         <input
           type='checkbox'
           ${
-            daily[selectedDate].checked[k]
+            daily[selectedDate]
+            .checked[k]
             ? 'checked'
             : ''
           }
@@ -507,35 +801,42 @@ function render(){
         </button>
 
       </div>
+
     `;
 
   });
 
-  // tasks
   const t =
-    document.getElementById('taskList');
+    document.getElementById(
+      'taskList'
+    );
 
   t.innerHTML='';
 
-  daily[selectedDate].tasks.forEach((x,i)=>{
+  daily[selectedDate]
+  .tasks
+  .forEach((x,i)=>{
 
     const k = 'task_'+i;
 
     total++;
 
     if(
-      daily[selectedDate].checked[k]
+      daily[selectedDate]
+      .checked[k]
     ){
       done++;
     }
 
     t.innerHTML += `
+
       <div class='task-item'>
 
         <input
           type='checkbox'
           ${
-            daily[selectedDate].checked[k]
+            daily[selectedDate]
+            .checked[k]
             ? 'checked'
             : ''
           }
@@ -552,32 +853,25 @@ function render(){
         </button>
 
       </div>
+
     `;
 
   });
 
-  // text
-  document.getElementById(
-    'studyWhat'
-  ).value =
-  daily[selectedDate].studyWhat || '';
-
-  document.getElementById(
-    'studySource'
-  ).value =
-  daily[selectedDate].studySource || '';
+  renderStudyItems();
 
   document.getElementById(
     'bookRead'
   ).value =
-  daily[selectedDate].bookRead || '';
+  daily[selectedDate]
+  .bookRead || '';
 
   document.getElementById(
     'notes'
   ).value =
-  daily[selectedDate].notes || '';
+  daily[selectedDate]
+  .notes || '';
 
-  // celebrate
   const rate =
     total
     ? done / total
@@ -586,42 +880,52 @@ function render(){
   document.getElementById(
     'celebrateMsg'
   ).style.display =
+
     rate >= 0.8
     ? 'block'
     : 'none';
 
 }
 
-[
-  'studyWhat',
-  'studySource',
-  'bookRead',
-  'notes'
-].forEach(id=>{
+document.addEventListener(
+  'input',
+  e=>{
 
-  document.addEventListener(
-    'input',
-    e=>{
+    ensureDate(selectedDate);
 
-      if(e.target.id===id){
+    if(
+      e.target.id === 'bookRead'
+    ){
 
-        save();
+      daily[selectedDate]
+      .bookRead = e.target.value;
 
-      }
+      saveLocal();
+      cloudSave();
 
     }
-  );
 
-});
+    if(
+      e.target.id === 'notes'
+    ){
+
+      daily[selectedDate]
+      .notes = e.target.value;
+
+      saveLocal();
+      cloudSave();
+
+    }
+
+  }
+);
 
 async function cloudLoad(){
 
   try{
 
     const res =
-     await fetch(
-      API_URL + '?t=' + Date.now()
-     );
+      await fetch(API_URL);
 
     const text =
       await res.text();
@@ -645,14 +949,16 @@ async function cloudLoad(){
 
     habits =
       JSON.parse(
-        localStorage.getItem('habits')
-        || '[]'
+        localStorage.getItem(
+          'habits'
+        ) || '[]'
       );
 
     daily =
       JSON.parse(
-        localStorage.getItem('dailyData')
-        || '{}'
+        localStorage.getItem(
+          'dailyData'
+        ) || '{}'
       );
 
   }
