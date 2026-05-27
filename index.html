@@ -245,6 +245,23 @@
 
   <div class="card">
 
+    <h2>Danh sách những việc cần làm</h2>
+
+    <input
+      id="globalTaskInput"
+      placeholder="Nhập việc cần làm..."
+    />
+
+    <button onclick="addGlobalTask()">
+      + Thêm việc cần làm
+    </button>
+
+    <div id="globalTaskList"></div>
+
+  </div>
+
+  <div class="card">
+
     <h2>Task phát sinh hôm nay</h2>
 
     <input
@@ -338,6 +355,7 @@ function nowVN(){
 }
 
 let habits = [];
+let globalTasks = [];
 let daily = {};
 
 const today = getTodayKey();
@@ -397,6 +415,11 @@ function saveLocal(){
   );
 
   localStorage.setItem(
+    'globalTasks',
+    JSON.stringify(globalTasks)
+  );
+
+  localStorage.setItem(
     'dailyData',
     JSON.stringify(daily)
   );
@@ -416,11 +439,12 @@ async function cloudSave(){
      },
 
      body:JSON.stringify({
-     habits,
-     daily
-    })
+       habits,
+       globalTasks,
+       daily
+     })
 
-});
+    });
 
   }catch(err){
 
@@ -454,6 +478,26 @@ function addHabit(){
 
   document.getElementById(
     'habitInput'
+  ).value='';
+
+  save();
+
+}
+
+function addGlobalTask(){
+
+  const v =
+    document
+    .getElementById('globalTaskInput')
+    .value
+    .trim();
+
+  if(!v) return;
+
+  globalTasks.push(v);
+
+  document.getElementById(
+    'globalTaskInput'
   ).value='';
 
   save();
@@ -506,6 +550,14 @@ function removeTask(i){
 function removeHabit(i){
 
   habits.splice(i,1);
+
+  save();
+
+}
+
+function removeGlobalTask(i){
+
+  globalTasks.splice(i,1);
 
   save();
 
@@ -583,7 +635,7 @@ async function updateStudyTopic(index,value){
 
 }
 
-async function updateSources(
+async function updateSource(
   studyIndex,
   sourceIndex,
   value
@@ -810,6 +862,50 @@ function render(){
 
   });
 
+  const g =
+    document.getElementById(
+      'globalTaskList'
+    );
+
+  g.innerHTML='';
+
+  globalTasks.forEach((x,i)=>{
+
+    const k = 'globaltask_'+i;
+
+    if(
+      daily[selectedDate]
+      .checked[k]
+    ){
+      return;
+    }
+
+    total++;
+
+    g.innerHTML += `
+
+      <div class='task-item'>
+
+        <input
+          type='checkbox'
+          onchange='toggle("${k}")'
+        >
+
+        <span>${x}</span>
+
+        <button
+          class='small-btn'
+          onclick='removeGlobalTask(${i})'
+        >
+          X
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
   const t =
     document.getElementById(
       'taskList'
@@ -944,6 +1040,9 @@ async function cloudLoad(){
       habits =
         data.habits || [];
 
+      globalTasks =
+        data.globalTasks || [];
+
       daily =
         data.daily || {};
 
@@ -957,6 +1056,13 @@ async function cloudLoad(){
       JSON.parse(
         localStorage.getItem(
           'habits'
+        ) || '[]'
+      );
+
+    globalTasks =
+      JSON.parse(
+        localStorage.getItem(
+          'globalTasks'
         ) || '[]'
       );
 
