@@ -84,9 +84,9 @@
 
     .task-item{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       gap:10px;
-      margin:10px 0;
+      margin:14px 0;
     }
 
     .task-item span{
@@ -96,6 +96,7 @@
     .task-item input[type='checkbox']{
       width:auto;
       transform:scale(1.3);
+      margin-top:12px;
     }
 
     .small-btn{
@@ -159,6 +160,15 @@
 
     .source-link:hover{
       color:#ffffff;
+    }
+
+    .global-task-content{
+      flex:1;
+    }
+
+    .global-task-title{
+      font-size:1rem;
+      margin-bottom:4px;
     }
 
     .celebrate{
@@ -249,7 +259,12 @@
 
     <input
       id="globalTaskInput"
-      placeholder="Nhập việc cần làm..."
+      placeholder="Học video gì / Việc cần làm..."
+    />
+
+    <input
+      id="globalTaskSource"
+      placeholder="Nguồn / Link..."
     />
 
     <button onclick="addGlobalTask()">
@@ -486,18 +501,31 @@ function addHabit(){
 
 function addGlobalTask(){
 
-  const v =
+  const title =
     document
     .getElementById('globalTaskInput')
     .value
     .trim();
 
-  if(!v) return;
+  const source =
+    document
+    .getElementById('globalTaskSource')
+    .value
+    .trim();
 
-  globalTasks.push(v);
+  if(!title) return;
+
+  globalTasks.push({
+    title,
+    source
+  });
 
   document.getElementById(
     'globalTaskInput'
+  ).value='';
+
+  document.getElementById(
+    'globalTaskSource'
   ).value='';
 
   save();
@@ -882,6 +910,9 @@ function render(){
 
     total++;
 
+    const finalUrl =
+      formatUrl(x.source || '');
+
     g.innerHTML += `
 
       <div class='task-item'>
@@ -891,7 +922,27 @@ function render(){
           onchange='toggle("${k}")'
         >
 
-        <span>${x}</span>
+        <div class='global-task-content'>
+
+          <div class='global-task-title'>
+            ${x.title}
+          </div>
+
+          ${
+            x.source
+            ? `
+              <a
+                class="source-link"
+                href="${finalUrl}"
+                target="_blank"
+              >
+                🔗 ${x.source}
+              </a>
+            `
+            : ''
+          }
+
+        </div>
 
         <button
           class='small-btn'
