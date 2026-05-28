@@ -376,6 +376,7 @@ let daily = {};
 const today = getTodayKey();
 
 let selectedDate = today;
+let saveTimeout = null;
 
 function createStudyBlock(){
 
@@ -503,6 +504,18 @@ async function save(){
   await cloudSave();
 
   render();
+
+}
+
+function saveDelayed(){
+
+  clearTimeout(saveTimeout);
+
+  saveTimeout = setTimeout(()=>{
+
+    save();
+
+  },700);
 
 }
 
@@ -685,7 +698,7 @@ function updateStudyTopic(index,value){
   .studyItems[index]
   .topic = value;
 
-  save();
+  saveDelayed();
 }
 
 function updateSource(
@@ -1075,7 +1088,7 @@ document.addEventListener(
       daily[selectedDate]
       .bookRead = e.target.value;
 
-      save();
+      saveDelayed();
 
     }
 
@@ -1086,7 +1099,7 @@ document.addEventListener(
       daily[selectedDate]
       .notes = e.target.value;
 
-      save();
+      saveDelayed();
 
     }
 
