@@ -391,7 +391,9 @@ function createStudyBlock(){
 function createEmptyDay(){
 
   return {
+
     tasks:[],
+
     checked:{},
 
     studyItems:[
@@ -399,7 +401,9 @@ function createEmptyDay(){
     ],
 
     bookRead:'',
+
     notes:''
+
   };
 
 }
@@ -412,16 +416,39 @@ function ensureDate(date){
 
   }
 
-  if(!daily[date].studyItems){
+  if(!daily[date].tasks){
 
-    daily[date].studyItems = [
-      createStudyBlock()
-    ];
+    daily[date].tasks = [];
 
   }
 
+  if(!daily[date].checked){
+
+    daily[date].checked = {};
+
+  }
+
+if(!Array.isArray(daily[date].studyItems)){
+
+  daily[date].studyItems = [
+    createStudyBlock()
+  ];
+
 }
 
+if(daily[date].bookRead === undefined){
+
+  daily[date].bookRead = '';
+
+}
+
+if(daily[date].notes === undefined){
+
+  daily[date].notes = '';
+
+}
+
+}
 function saveLocal(){
 
   localStorage.setItem(
@@ -650,7 +677,7 @@ function removeSource(studyIndex,sourceIndex){
 
 }
 
-async function updateStudyTopic(index,value){
+function updateStudyTopic(index,value){
 
   ensureDate(selectedDate);
 
@@ -658,12 +685,10 @@ async function updateStudyTopic(index,value){
   .studyItems[index]
   .topic = value;
 
-  saveLocal();
-  await cloudSave();
-
+  save();
 }
 
-async function updateSource(
+function updateSource(
   studyIndex,
   sourceIndex,
   value
@@ -675,8 +700,7 @@ async function updateSource(
   .studyItems[studyIndex]
   .sources[sourceIndex] = value;
 
-  saveLocal();
-  await cloudSave();
+  save();
 
 }
 
@@ -1051,8 +1075,7 @@ document.addEventListener(
       daily[selectedDate]
       .bookRead = e.target.value;
 
-      saveLocal();
-      cloudSave();
+      save();
 
     }
 
@@ -1063,8 +1086,7 @@ document.addEventListener(
       daily[selectedDate]
       .notes = e.target.value;
 
-      saveLocal();
-      cloudSave();
+      save();
 
     }
 
@@ -1092,11 +1114,17 @@ async function cloudLoad(){
         data.habits || [];
 
       globalTasks =
-        data.globalTasks || [];
+        Array.isArray(data.globalTasks)
+        ? data.globalTasks
+        : [];
 
       daily =
         data.daily || {};
+      Object.keys(daily).forEach(date=>{
 
+      ensureDate(date);
+
+      });
     }
 
   }catch(err){
