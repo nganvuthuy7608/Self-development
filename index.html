@@ -4,150 +4,69 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Self-development curriculum</title>
-
   <style>
     *{ box-sizing:border-box; }
-
     body{
-      margin:0;
-      font-family:Arial,sans-serif;
-      color:white;
-      min-height:100vh;
-      background:
-        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop')
-        center/cover fixed;
+      margin:0; font-family:Arial,sans-serif; color:white; min-height:100vh;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop') center/cover fixed;
     }
-
-    .overlay{
-      background:rgba(0,0,0,0.65);
-      min-height:100vh;
-      padding:20px;
-    }
-
+    .overlay{ background:rgba(0,0,0,0.65); min-height:100vh; padding:20px; }
     h1{ text-align:center; font-size:2.2rem; margin-bottom:10px; }
     .date{ text-align:center; margin-bottom:20px; font-size:1rem; }
-
     .card{
-      background:rgba(255,255,255,0.12);
-      backdrop-filter:blur(8px);
-      border-radius:18px;
-      padding:20px;
-      margin:15px auto;
-      max-width:900px;
+      background:rgba(255,255,255,0.12); backdrop-filter:blur(8px);
+      border-radius:18px; padding:20px; margin:15px auto; max-width:900px;
       box-shadow:0 8px 30px rgba(0,0,0,0.25);
     }
-
     input, textarea, button{
-      width:100%;
-      padding:12px;
-      margin:8px 0;
-      border:none;
-      border-radius:10px;
-      font-size:1rem;
+      width:100%; padding:12px; margin:8px 0; border:none; border-radius:10px; font-size:1rem;
     }
-
     textarea{ min-height:100px; resize:vertical; }
-
     button{ cursor:pointer; background:#6c63ff; color:white; }
     button:hover{ opacity:.9; }
-
-    .task-item{
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      margin:14px 0;
-    }
-
+    .task-item{ display:flex; align-items:flex-start; gap:10px; margin:14px 0; }
     .task-item span{ flex:1; }
-
-    .task-item input[type='checkbox']{
-      width:auto;
-      transform:scale(1.3);
-      margin-top:12px;
-    }
-
+    .task-item input[type='checkbox']{ width:auto; transform:scale(1.3); margin-top:12px; }
     .small-btn{ width:auto; padding:6px 10px; background:#ff5c5c; }
     .secondary-btn{ background:#4caf50; }
     .source-btn{ background:#2196f3; width:auto; padding:8px 14px; margin-top:10px; }
-
-    .study-block{
-      background:rgba(255,255,255,0.08);
-      border-radius:14px;
-      padding:16px;
-      margin-top:18px;
-    }
-
-    .study-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:10px;
-    }
-
+    .study-block{ background:rgba(255,255,255,0.08); border-radius:14px; padding:16px; margin-top:18px; }
+    .study-header{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; }
     .study-title{ font-size:1.05rem; font-weight:bold; }
-
-    .source-item{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      margin-top:10px;
-      flex-wrap:wrap;
-    }
-
+    .source-item{ display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
     .source-item input{ flex:1; min-width:220px; }
-
-    .source-link{
-      display:inline-block;
-      margin-top:4px;
-      color:#9ad1ff;
-      text-decoration:underline;
-      word-break:break-all;
-      font-size:.95rem;
-    }
-    .source-link:hover{ color:#ffffff; }
-
+    .source-link{ display:inline-block; margin-top:4px; color:#9ad1ff; text-decoration:underline; word-break:break-all; font-size:.95rem; }
+    .source-link:hover{ color:#fff; }
     .global-task-content{ flex:1; }
     .global-task-title{ font-size:1rem; margin-bottom:4px; }
-
-    /* task đã hoàn thành vẫn hiển thị nhưng mờ + gạch ngang */
-    .task-done{ opacity:0.5; }
-    .task-done span,
-    .task-done .global-task-title{ text-decoration:line-through; }
-
+    .task-done{ opacity:.5; }
+    .task-done span, .task-done .global-task-title{ text-decoration:line-through; }
     .celebrate{
-      display:none;
-      text-align:center;
-      font-size:2rem;
-      font-weight:bold;
-      animation:rainbow 1s infinite;
-      margin:20px auto;
-      max-width:900px;
+      display:none; text-align:center; font-size:2rem; font-weight:bold;
+      animation:rainbow 1s infinite; margin:20px auto; max-width:900px;
     }
-
     @keyframes rainbow{
-      0%  { color:#ff0000; transform:scale(1);    }
-      25% { color:#ffff00; transform:scale(1.05); }
-      50% { color:#00ff00; transform:scale(1.1);  }
-      75% { color:#00ffff; transform:scale(1.05); }
-      100%{ color:#ff00ff; transform:scale(1);    }
+      0%{ color:#ff0000; transform:scale(1); } 25%{ color:#ffff00; transform:scale(1.05); }
+      50%{ color:#00ff00; transform:scale(1.1); } 75%{ color:#00ffff; transform:scale(1.05); }
+      100%{ color:#ff00ff; transform:scale(1); }
+    }
+    #syncStatus{
+      position:fixed; bottom:14px; right:18px; font-size:.8rem;
+      background:rgba(0,0,0,0.55); padding:6px 12px; border-radius:20px;
+      transition:opacity .4s;
     }
   </style>
 </head>
-
 <body>
 <div class="overlay">
-
   <h1>Self-development curriculum</h1>
   <div class="date" id="today"></div>
 
-  <!-- Xem ngày khác -->
   <div class="card">
     <h2>Xem dữ liệu ngày khác</h2>
     <input type="date" id="historyDate" onchange="loadHistory(this.value)" />
   </div>
 
-  <!-- Daily Habit -->
   <div class="card">
     <h2>Daily Habit (lặp lại mỗi ngày)</h2>
     <input id="habitInput" placeholder="Nhập habit mới..." />
@@ -155,7 +74,6 @@
     <div id="habitList"></div>
   </div>
 
-  <!-- Danh sách việc cần làm -->
   <div class="card">
     <h2>Danh sách những việc cần làm</h2>
     <input id="globalTaskInput" placeholder="Học video gì / Việc cần làm..." />
@@ -164,7 +82,6 @@
     <div id="globalTaskList"></div>
   </div>
 
-  <!-- Task phát sinh -->
   <div class="card">
     <h2>Task phát sinh hôm nay</h2>
     <input id="taskInput" placeholder="Nhập task phát sinh..." />
@@ -172,39 +89,56 @@
     <div id="taskList"></div>
   </div>
 
-  <!-- Celebrate -->
   <div class="celebrate" id="celebrateMsg">
-    🎉 BẠN ĐÃ ĐẠT 80% HIỆU SUẤT TRONG NGÀY.
-    BẠN THẬT GIỎI.
-    NGÀY HÔM NAY CỦA BẠN THẬT NĂNG SUẤT.
-    HÃY DUY TRÌ NHÉ! 🎉
+    🎉 BẠN ĐÃ ĐẠT 80% HIỆU SUẤT TRONG NGÀY. BẠN THẬT GIỎI. NGÀY HÔM NAY CỦA BẠN THẬT NĂNG SUẤT. HÃY DUY TRÌ NHÉ! 🎉
   </div>
 
-  <!-- Nay học gì -->
   <div class="card">
     <h2>Nay mình học gì</h2>
     <div id="studyContainer"></div>
     <button class="secondary-btn" onclick="addStudyBlock()">+ Thêm phần học mới</button>
   </div>
 
-  <!-- Đọc sách -->
   <div class="card">
     <h2>Nay mình đọc sách gì</h2>
     <textarea id="bookRead" placeholder="Sách hôm nay..."></textarea>
   </div>
 
-  <!-- Ghi chú -->
   <div class="card">
     <h2>Note / Áp dụng những gì mình học</h2>
     <textarea id="notes" placeholder="Ghi chú..."></textarea>
   </div>
-
 </div>
 
+<div id="syncStatus">⏳ Đang tải...</div>
+
 <script>
-const VN = 'Asia/Ho_Chi_Minh';
+/* ═══════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════ */
+const VN      = 'Asia/Ho_Chi_Minh';
 const API_URL = 'https://script.google.com/macros/s/AKfycbxux3NlNXTYKgxI7fybDTemPxN4thuEFsgnOaJ_Gyz2smdiqhrtHjBDcmwApXmqX1w/exec';
 
+const LS_HABITS  = 'habits';
+const LS_GTASKS  = 'globalTasks';
+const LS_DAILY   = 'dailyData';
+const LS_VERSION = 'dataVersion'; // số nguyên tăng dần, dùng để biết local hay cloud mới hơn
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let habits      = [];
+let globalTasks = [];
+let daily       = {};
+let dataVersion = 0; // tăng mỗi lần user thay đổi gì
+
+const today = getTodayKey();
+let selectedDate = today;
+let saveTimeout  = null;
+
+/* ═══════════════════════════════════════════
+   DATE UTILS
+═══════════════════════════════════════════ */
 function getTodayKey(){
   return new Intl.DateTimeFormat('en-CA',{timeZone:VN}).format(new Date());
 }
@@ -212,15 +146,9 @@ function nowVN(){
   return new Date().toLocaleString('vi-VN',{timeZone:VN});
 }
 
-let habits      = [];
-let globalTasks = [];
-let daily       = {};
-
-const today    = getTodayKey();
-let selectedDate = today;
-let saveTimeout  = null;
-
-/* ── helpers ── */
+/* ═══════════════════════════════════════════
+   DATA HELPERS
+═══════════════════════════════════════════ */
 function createStudyBlock(){ return { topic:'', sources:[''] }; }
 
 function createEmptyDay(){
@@ -228,50 +156,122 @@ function createEmptyDay(){
 }
 
 function ensureDate(date){
-  if(!daily[date])                              daily[date] = createEmptyDay();
-  if(!daily[date].tasks)                        daily[date].tasks = [];
-  if(!daily[date].checked)                      daily[date].checked = {};
-  if(!Array.isArray(daily[date].studyItems))    daily[date].studyItems = [createStudyBlock()];
-  if(daily[date].bookRead === undefined)        daily[date].bookRead = '';
-  if(daily[date].notes    === undefined)        daily[date].notes    = '';
+  if(!daily[date])                           daily[date] = createEmptyDay();
+  if(!daily[date].tasks)                     daily[date].tasks = [];
+  if(!daily[date].checked)                   daily[date].checked = {};
+  if(!Array.isArray(daily[date].studyItems)) daily[date].studyItems = [createStudyBlock()];
+  if(daily[date].bookRead === undefined)     daily[date].bookRead = '';
+  if(daily[date].notes    === undefined)     daily[date].notes    = '';
 }
 
-/* ── persist ── */
+/* ═══════════════════════════════════════════
+   STORAGE — localStorage là nguồn chính
+═══════════════════════════════════════════ */
 function saveLocal(){
-  localStorage.setItem('habits',      JSON.stringify(habits));
-  localStorage.setItem('globalTasks', JSON.stringify(globalTasks));
-  localStorage.setItem('dailyData',   JSON.stringify(daily));
+  // Ghi ĐỒNG BỘ (synchronous) — không async, không bỏ sót
+  try {
+    localStorage.setItem(LS_HABITS,  JSON.stringify(habits));
+    localStorage.setItem(LS_GTASKS,  JSON.stringify(globalTasks));
+    localStorage.setItem(LS_DAILY,   JSON.stringify(daily));
+    localStorage.setItem(LS_VERSION, String(dataVersion));
+  } catch(e){ console.error('saveLocal error', e); }
 }
 
+function loadLocal(){
+  try {
+    habits      = JSON.parse(localStorage.getItem(LS_HABITS)  || '[]');
+    globalTasks = JSON.parse(localStorage.getItem(LS_GTASKS)  || '[]');
+    daily       = JSON.parse(localStorage.getItem(LS_DAILY)   || '{}');
+    dataVersion = parseInt(localStorage.getItem(LS_VERSION)   || '0', 10);
+  } catch(e){
+    habits = []; globalTasks = []; daily = {}; dataVersion = 0;
+  }
+  Object.keys(daily).forEach(d => ensureDate(d));
+  ensureDate(selectedDate);
+}
+
+/* Cloud sync — chạy nền, KHÔNG block UI */
 async function cloudSave(){
-  try{
-    await fetch(API_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({habits, globalTasks, daily})
+  setSyncStatus('☁️ Đang lưu cloud...');
+  try {
+    await fetch(API_URL, {
+      method : 'POST',
+      headers: {'Content-Type':'application/json'},
+      body   : JSON.stringify({ habits, globalTasks, daily, version: dataVersion })
     });
-  }catch(err){ console.log('cloud save error:',err); }
+    setSyncStatus('✅ Đã lưu', 2000);
+  } catch(e){
+    setSyncStatus('⚠️ Lỗi cloud (dữ liệu đã lưu local)', 3000);
+  }
 }
 
-/* save() – lưu local + cloud rồi render */
-async function save(){
-  saveLocal();
-  await cloudSave();
-  render();
+async function cloudLoad(){
+  try {
+    const res  = await fetch(API_URL + '?t=' + Date.now());
+    const text = await res.text();
+    if(!text) return;
+    const data = JSON.parse(text);
+
+    // Chỉ dùng cloud nếu version cloud CAO HƠN local
+    const cloudVer = parseInt(data.version || '0', 10);
+    if(cloudVer > dataVersion){
+      habits      = data.habits      || [];
+      globalTasks = Array.isArray(data.globalTasks) ? data.globalTasks : [];
+      daily       = data.daily       || {};
+      dataVersion = cloudVer;
+      Object.keys(daily).forEach(d => ensureDate(d));
+      ensureDate(selectedDate);
+      saveLocal(); // cập nhật local theo cloud mới hơn
+      render();
+      setSyncStatus('✅ Đồng bộ cloud', 2000);
+    } else {
+      setSyncStatus('✅ Local mới nhất', 2000);
+    }
+  } catch(e){
+    setSyncStatus('⚠️ Không kết nối được cloud', 3000);
+  }
 }
 
-/* saveDelayed() – dùng cho các trường đang gõ liên tục (textarea topic)
-   chỉ lưu local ngay, cloud + render sau 700ms dừng gõ */
-function saveDelayed(){
-  saveLocal();                    // ← lưu local NGAY để không mất khi reload
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(async ()=>{
-    await cloudSave();
-    // KHÔNG gọi render() ở đây để tránh reset con trỏ textarea đang gõ
-  }, 700);
+/* ═══════════════════════════════════════════
+   SAVE — luôn local trước, cloud sau
+═══════════════════════════════════════════ */
+function save(){
+  dataVersion++;    // đánh dấu data mới hơn cloud
+  saveLocal();      // đồng bộ, ngay lập tức
+  render();         // cập nhật UI
+  cloudSave();      // nền, không await
 }
 
-/* ── add / remove ── */
+// Dùng cho các trường đang gõ liên tục (textarea)
+// → local ngay, cloud + render SAU khi dừng gõ
+let textSaveTimeout = null;
+function saveText(){
+  dataVersion++;
+  saveLocal();      // local ngay lập tức
+  clearTimeout(textSaveTimeout);
+  textSaveTimeout = setTimeout(()=>{
+    cloudSave();    // cloud sau 1s dừng gõ
+  }, 1000);
+  // KHÔNG render() để tránh reset con trỏ textarea
+}
+
+/* ═══════════════════════════════════════════
+   SYNC STATUS BADGE
+═══════════════════════════════════════════ */
+let statusTimeout = null;
+function setSyncStatus(msg, hideAfterMs){
+  const el = document.getElementById('syncStatus');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(statusTimeout);
+  if(hideAfterMs){
+    statusTimeout = setTimeout(()=>{ el.style.opacity = '0'; }, hideAfterMs);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ACTIONS
+═══════════════════════════════════════════ */
 function addHabit(){
   const v = document.getElementById('habitInput').value.trim();
   if(!v) return;
@@ -308,7 +308,6 @@ function toggle(key){
 function removeTask(i){
   ensureDate(selectedDate);
   daily[selectedDate].tasks.splice(i,1);
-  // xóa checked key tương ứng rồi re-index
   delete daily[selectedDate].checked['task_'+i];
   save();
 }
@@ -350,214 +349,206 @@ function removeSource(studyIndex, sourceIndex){
   save();
 }
 
-/* ── update (gõ liên tục) ── */
 function updateStudyTopic(index, value){
   ensureDate(selectedDate);
   daily[selectedDate].studyItems[index].topic = value;
-  saveDelayed();
+  saveText();
 }
 
 function updateSource(studyIndex, sourceIndex, value){
   ensureDate(selectedDate);
   daily[selectedDate].studyItems[studyIndex].sources[sourceIndex] = value;
-  saveDelayed();
+  saveText();
 }
 
-/* ── bookRead & notes: lắng nghe input event, lưu ngay local, cloud sau ── */
+/* ═══════════════════════════════════════════
+   INPUT LISTENERS (bookRead, notes)
+═══════════════════════════════════════════ */
 document.addEventListener('input', e => {
   ensureDate(selectedDate);
   if(e.target.id === 'bookRead'){
     daily[selectedDate].bookRead = e.target.value;
-    saveDelayed();
+    saveText();
   }
   if(e.target.id === 'notes'){
     daily[selectedDate].notes = e.target.value;
-    saveDelayed();
+    saveText();
   }
 });
 
-/* ── trước khi đóng/reload: force save local ── */
+/* Force-save local trước khi tab đóng / reload */
 window.addEventListener('beforeunload', () => {
   saveLocal();
 });
 
-/* ── history ── */
+/* ═══════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════ */
 function loadHistory(date){
   selectedDate = date || today;
   ensureDate(selectedDate);
   render();
 }
 
-/* ── format URL ── */
+/* ═══════════════════════════════════════════
+   FORMAT URL
+═══════════════════════════════════════════ */
 function formatUrl(url){
   if(!url) return '';
   return (url.startsWith('http://')||url.startsWith('https://')) ? url : 'https://'+url;
 }
 
-/* ── render study items (không dùng innerHTML để tránh mất focus) ── */
+/* ═══════════════════════════════════════════
+   RENDER STUDY ITEMS (dùng DOM thay innerHTML
+   để textarea không bị reset khi đang gõ)
+═══════════════════════════════════════════ */
 function renderStudyItems(){
   const container = document.getElementById('studyContainer');
   container.innerHTML = '';
-
-  daily[selectedDate].studyItems.forEach((item, studyIndex) => {
+  daily[selectedDate].studyItems.forEach((item, si) => {
     const block = document.createElement('div');
     block.className = 'study-block';
 
-    // header
     const header = document.createElement('div');
     header.className = 'study-header';
-    header.innerHTML = `<div class="study-title">Nội dung học #${studyIndex+1}</div>`;
+    const title = document.createElement('div');
+    title.className = 'study-title';
+    title.textContent = 'Nội dung học #'+(si+1);
     const delBtn = document.createElement('button');
     delBtn.className = 'small-btn';
     delBtn.textContent = 'Xóa';
-    delBtn.onclick = () => removeStudyBlock(studyIndex);
+    delBtn.onclick = () => removeStudyBlock(si);
+    header.appendChild(title);
     header.appendChild(delBtn);
     block.appendChild(header);
 
-    // textarea cho topic
     const ta = document.createElement('textarea');
     ta.placeholder = 'Hôm nay học gì...';
     ta.value = item.topic;
-    ta.oninput = () => updateStudyTopic(studyIndex, ta.value);
+    ta.oninput = () => updateStudyTopic(si, ta.value);
     block.appendChild(ta);
 
-    // sources
-    item.sources.forEach((source, sourceIndex) => {
+    item.sources.forEach((src, idx) => {
       const row = document.createElement('div');
       row.className = 'source-item';
-
       const inp = document.createElement('input');
       inp.placeholder = 'Nguồn học ở đâu...';
-      inp.value = source;
-      inp.oninput = () => updateSource(studyIndex, sourceIndex, inp.value);
-      row.appendChild(inp);
-
+      inp.value = src;
+      inp.oninput = () => updateSource(si, idx, inp.value);
       const xBtn = document.createElement('button');
       xBtn.className = 'small-btn';
       xBtn.textContent = 'X';
-      xBtn.onclick = () => removeSource(studyIndex, sourceIndex);
+      xBtn.onclick = () => removeSource(si, idx);
+      row.appendChild(inp);
       row.appendChild(xBtn);
-
       block.appendChild(row);
-
-      if(source.trim()){
+      if(src.trim()){
         const a = document.createElement('a');
         a.className = 'source-link';
-        a.href = formatUrl(source);
+        a.href = formatUrl(src);
         a.target = '_blank';
-        a.textContent = '🔗 ' + source;
+        a.textContent = '🔗 ' + src;
         block.appendChild(a);
       }
     });
 
-    // nút thêm nguồn
     const addBtn = document.createElement('button');
     addBtn.className = 'source-btn';
     addBtn.textContent = '+ Thêm nguồn học';
-    addBtn.onclick = () => addSource(studyIndex);
+    addBtn.onclick = () => addSource(si);
     block.appendChild(addBtn);
 
     container.appendChild(block);
   });
 }
 
-/* ── main render ── */
+/* ═══════════════════════════════════════════
+   MAIN RENDER
+═══════════════════════════════════════════ */
 function render(){
   ensureDate(selectedDate);
   document.getElementById('historyDate').value = selectedDate;
 
   let total = 0, done = 0;
 
-  /* -- Habits -- */
+  /* Habits */
   const hEl = document.getElementById('habitList');
   hEl.innerHTML = '';
   habits.forEach((x, i) => {
     const k = 'habit_'+i;
-    total++;
     const checked = !!daily[selectedDate].checked[k];
-    if(checked) done++;
+    total++; if(checked) done++;
     hEl.innerHTML += `
       <div class="task-item${checked?' task-done':''}">
-        <input type="checkbox" ${checked?'checked':''} onchange="toggle('${k}')" style="width:auto;transform:scale(1.3);margin-top:12px;">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggle('${k}')"
+          style="width:auto;transform:scale(1.3);margin-top:12px;">
         <span>${x}</span>
         <button class="small-btn" onclick="removeHabit(${i})">X</button>
       </div>`;
   });
 
-  /* -- Global tasks -- */
+  /* Global tasks */
   const gEl = document.getElementById('globalTaskList');
   gEl.innerHTML = '';
   globalTasks.forEach((x, i) => {
     const k = 'globaltask_'+i;
-    total++;
     const checked = !!daily[selectedDate].checked[k];
-    if(checked) done++;
-    const finalUrl = formatUrl(x.source || '');
+    total++; if(checked) done++;
+    const url = formatUrl(x.source||'');
     gEl.innerHTML += `
       <div class="task-item${checked?' task-done':''}">
-        <input type="checkbox" ${checked?'checked':''} onchange="toggle('${k}')" style="width:auto;transform:scale(1.3);margin-top:12px;">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggle('${k}')"
+          style="width:auto;transform:scale(1.3);margin-top:12px;">
         <div class="global-task-content">
           <div class="global-task-title">${x.title}</div>
-          ${x.source?`<a class="source-link" href="${finalUrl}" target="_blank">🔗 ${x.source}</a>`:''}
+          ${x.source?`<a class="source-link" href="${url}" target="_blank">🔗 ${x.source}</a>`:''}
         </div>
         <button class="small-btn" onclick="removeGlobalTask(${i})">X</button>
       </div>`;
   });
 
-  /* -- Daily tasks -- */
+  /* Daily tasks */
   const tEl = document.getElementById('taskList');
   tEl.innerHTML = '';
   daily[selectedDate].tasks.forEach((x, i) => {
     const k = 'task_'+i;
-    total++;
     const checked = !!daily[selectedDate].checked[k];
-    if(checked) done++;
+    total++; if(checked) done++;
     tEl.innerHTML += `
       <div class="task-item${checked?' task-done':''}">
-        <input type="checkbox" ${checked?'checked':''} onchange="toggle('${k}')" style="width:auto;transform:scale(1.3);margin-top:12px;">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggle('${k}')"
+          style="width:auto;transform:scale(1.3);margin-top:12px;">
         <span>${x}</span>
         <button class="small-btn" onclick="removeTask(${i})">X</button>
       </div>`;
   });
 
-  /* -- Study items -- */
+  /* Study */
   renderStudyItems();
 
-  /* -- bookRead & notes: chỉ set nếu không đang focus vào ô đó -- */
+  /* bookRead & notes — không ghi đè ô đang focus */
   const bookEl  = document.getElementById('bookRead');
   const notesEl = document.getElementById('notes');
   if(document.activeElement !== bookEl)  bookEl.value  = daily[selectedDate].bookRead || '';
   if(document.activeElement !== notesEl) notesEl.value = daily[selectedDate].notes    || '';
 
-  /* -- celebrate -- */
+  /* Celebrate */
   const rate = total ? done/total : 0;
   document.getElementById('celebrateMsg').style.display = rate >= 0.8 ? 'block' : 'none';
 }
 
-/* ── cloud load ── */
-async function cloudLoad(){
-  try{
-    const res  = await fetch(API_URL + '?t=' + Date.now());
-    const text = await res.text();
-    if(text){
-      const data  = JSON.parse(text);
-      habits      = data.habits || [];
-      globalTasks = Array.isArray(data.globalTasks) ? data.globalTasks : [];
-      daily       = data.daily  || {};
-      Object.keys(daily).forEach(date => ensureDate(date));
-    }
-  }catch(err){
-    console.log('cloud load error:',err);
-    habits      = JSON.parse(localStorage.getItem('habits')      || '[]');
-    globalTasks = JSON.parse(localStorage.getItem('globalTasks') || '[]');
-    daily       = JSON.parse(localStorage.getItem('dailyData')   || '{}');
-  }
-  ensureDate(selectedDate);
-  render();
-}
+/* ═══════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════ */
+// 1. Load local NGAY (đồng bộ) → UI hiện liền, không chờ mạng
+loadLocal();
+render();
+setSyncStatus('📡 Đang đồng bộ cloud...');
 
+// 2. Load cloud NGOÀI NỀN → chỉ cập nhật nếu cloud mới hơn
 cloudLoad();
 
+// Clock
 setInterval(()=>{
   document.getElementById('today').innerText =
     'Giờ Việt Nam: ' + nowVN() + ' | Đang xem dữ liệu ngày: ' + selectedDate;
