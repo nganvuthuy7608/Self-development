@@ -117,7 +117,7 @@
    CONFIG
 ═══════════════════════════════════════════ */
 const VN      = 'Asia/Ho_Chi_Minh';
-const API_URL = 'https://script.google.com/macros/s/AKfycbxux3NlNXTYKgxI7fybDTemPxN4thuEFsgnOaJ_Gyz2smdiqhrtHjBDcmwApXmqX1w/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwHEhkfP3cMk3IBo2noz99HwgI-M3cknAfUVYuMp0f6IiiDF5D_n9DqWALTyhPMuYn7/exec';
 
 const LS_HABITS = 'habits';
 const LS_GTASKS = 'globalTasks';
@@ -194,38 +194,38 @@ function loadLocal(){
 async function cloudSave(){
   setSyncStatus('☁️ Đang lưu cloud...');
   const payload = { habits, globalTasks, daily, timestamp: dataTimestamp };
-  console.log('[CLOUD SAVE] Gửi lên:', JSON.stringify(payload).slice(0,200));
+  const json    = JSON.stringify(payload);
+  console.log('[CLOUD SAVE] Gửi lên, size:', json.length, 'bytes');
   try {
-    const res  = await fetch(API_URL, {
-      method : 'POST',
-      headers: {'Content-Type':'application/json'},
-      body   : JSON.stringify(payload)
-    });
+    // Dùng GET + encodeURIComponent để tránh CORS block (POST bị chặn bởi Apps Script)
+    const url = API_URL + '?data=' + encodeURIComponent(json);
+    const res = await fetch(url);
     const txt = await res.text();
-    console.log('[CLOUD SAVE] Response:', txt.slice(0,200));
+    console.log('[CLOUD SAVE] Response:', txt.slice(0,100));
     setSyncStatus('✅ Đã lưu cloud', 2000);
   } catch(e){
     console.error('[CLOUD SAVE] LỖI:', e);
-    setSyncStatus('⚠️ Lỗi cloud (dữ liệu đã lưu local)', 3000);
+    setSyncStatus('⚠️ Lỗi cloud (đã lưu local)', 3000);
   }
 }
 
 async function cloudLoad(){
-  console.log('[CLOUD LOAD] Bắt đầu fetch, local timestamp:', dataTimestamp);
+  console.log('[CLOUD LOAD] Fetch, localTs:', dataTimestamp);
   try {
     const res  = await fetch(API_URL + '?t=' + Date.now());
     const text = await res.text();
-    console.log('[CLOUD LOAD] Raw response:', text.slice(0,300));
-    if(!text || text.trim() === '') {
-      console.warn('[CLOUD LOAD] Response rỗng!');
-      setSyncStatus('⚠️ Cloud trả về rỗng', 3000);
+    console.log('[CLOUD LOAD] Response:', text.slice(0,200));
+    if(!text || text.trim() === '{}' || text.trim() === '') {
+      setSyncStatus('⚠️ Cloud chưa có dữ liệu', 2000);
       return;
     }
-    const data = JSON.parse(text);
+    const data    = JSON.parse(text);
     const cloudTs = parseInt(data.timestamp || '0', 10);
-    console.log('[CLOUD LOAD] cloudTs:', cloudTs, '| localTs:', dataTimestamp, '| cloud mới hơn:', cloudTs > dataTimestamp);
+    console.log('[CLOUD LOAD] cloudTs:', cloudTs, '| localTs:', dataTimestamp);
 
-    if(cloudTs > dataTimestamp){
+    // Nhận cloud nếu cloud mới hơn local
+    // Trường hợp cả 2 = 0 (thiết bị mới chưa từng save) thì cũng nhận cloud
+    if(cloudTs >= dataTimestamp){
       habits        = data.habits      || [];
       globalTasks   = Array.isArray(data.globalTasks) ? data.globalTasks : [];
       daily         = data.daily       || {};
@@ -234,9 +234,11 @@ async function cloudLoad(){
       ensureDate(selectedDate);
       saveLocal();
       render();
-      setSyncStatus('✅ Đồng bộ từ cloud (' + new Date(cloudTs).toLocaleTimeString('vi-VN') + ')', 3000);
+      const timeStr = cloudTs ? new Date(cloudTs).toLocaleTimeString('vi-VN') : '?';
+      setSyncStatus('✅ Đồng bộ cloud (' + timeStr + ')', 3000);
     } else {
-      setSyncStatus('✅ Local đã mới nhất (ts=' + dataTimestamp + ')', 2000);
+      setSyncStatus('✅ Local mới hơn cloud, đang đẩy lên...', 1000);
+      cloudSave(); // local mới hơn → đẩy lên cloud luôn
     }
   } catch(e){
     console.error('[CLOUD LOAD] LỖI:', e);
