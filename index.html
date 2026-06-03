@@ -548,6 +548,23 @@ setSyncStatus('📡 Đang đồng bộ cloud...');
 // 2. Load cloud NGOÀI NỀN → chỉ cập nhật nếu cloud mới hơn
 cloudLoad();
 
+// 3. Mỗi khi tab/app được focus lại (user chuyển app trên mobile rồi quay lại)
+//    → pull cloud để lấy data mới nhất từ thiết bị kia
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible'){
+    setSyncStatus('📡 Đang đồng bộ...');
+    cloudLoad();
+  }
+});
+
+// 4. Polling mỗi 30s — đảm bảo sync kể cả khi visibilitychange không fire
+//    (một số trình duyệt mobile không fire event này đúng lúc)
+setInterval(() => {
+  if(document.visibilityState === 'visible'){
+    cloudLoad();
+  }
+}, 30000);
+
 // Clock
 setInterval(()=>{
   document.getElementById('today').innerText =
