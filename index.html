@@ -119,18 +119,18 @@
 const VN      = 'Asia/Ho_Chi_Minh';
 const API_URL = 'https://script.google.com/macros/s/AKfycbxux3NlNXTYKgxI7fybDTemPxN4thuEFsgnOaJ_Gyz2smdiqhrtHjBDcmwApXmqX1w/exec';
 
-const LS_HABITS  = 'habits';
-const LS_GTASKS  = 'globalTasks';
-const LS_DAILY   = 'dailyData';
-const LS_VERSION = 'dataVersion'; // số nguyên tăng dần, dùng để biết local hay cloud mới hơn
+const LS_HABITS = 'habits';
+const LS_GTASKS = 'globalTasks';
+const LS_DAILY  = 'dailyData';
+const LS_TS     = 'dataTimestamp'; // unix ms — thiết bị nào save sau thì thắng
 
 /* ═══════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════ */
-let habits      = [];
-let globalTasks = [];
-let daily       = {};
-let dataVersion = 0; // tăng mỗi lần user thay đổi gì
+let habits        = [];
+let globalTasks   = [];
+let daily         = {};
+let dataTimestamp = 0; // unix ms của lần save gần nhất
 
 const today = getTodayKey();
 let selectedDate = today;
@@ -170,21 +170,21 @@ function ensureDate(date){
 function saveLocal(){
   // Ghi ĐỒNG BỘ (synchronous) — không async, không bỏ sót
   try {
-    localStorage.setItem(LS_HABITS,  JSON.stringify(habits));
-    localStorage.setItem(LS_GTASKS,  JSON.stringify(globalTasks));
-    localStorage.setItem(LS_DAILY,   JSON.stringify(daily));
-    localStorage.setItem(LS_VERSION, String(dataVersion));
+    localStorage.setItem(LS_HABITS, JSON.stringify(habits));
+    localStorage.setItem(LS_GTASKS, JSON.stringify(globalTasks));
+    localStorage.setItem(LS_DAILY,  JSON.stringify(daily));
+    localStorage.setItem(LS_TS,     String(dataTimestamp));
   } catch(e){ console.error('saveLocal error', e); }
 }
 
 function loadLocal(){
   try {
-    habits      = JSON.parse(localStorage.getItem(LS_HABITS)  || '[]');
-    globalTasks = JSON.parse(localStorage.getItem(LS_GTASKS)  || '[]');
-    daily       = JSON.parse(localStorage.getItem(LS_DAILY)   || '{}');
-    dataVersion = parseInt(localStorage.getItem(LS_VERSION)   || '0', 10);
+    habits         = JSON.parse(localStorage.getItem(LS_HABITS) || '[]');
+    globalTasks    = JSON.parse(localStorage.getItem(LS_GTASKS) || '[]');
+    daily          = JSON.parse(localStorage.getItem(LS_DAILY)  || '{}');
+    dataTimestamp  = parseInt(localStorage.getItem(LS_TS)       || '0', 10);
   } catch(e){
-    habits = []; globalTasks = []; daily = {}; dataVersion = 0;
+    habits = []; globalTasks = []; daily = {}; dataTimestamp = 0;
   }
   Object.keys(daily).forEach(d => ensureDate(d));
   ensureDate(selectedDate);
@@ -197,7 +197,7 @@ async function cloudSave(){
     await fetch(API_URL, {
       method : 'POST',
       headers: {'Content-Type':'application/json'},
-      body   : JSON.stringify({ habits, globalTasks, daily, version: dataVersion })
+      body   : JSON.stringify({ habits, globalTasks, daily, timestamp: dataTimestamp })
     });
     setSyncStatus('✅ Đã lưu', 2000);
   } catch(e){
@@ -212,20 +212,20 @@ async function cloudLoad(){
     if(!text) return;
     const data = JSON.parse(text);
 
-    // Chỉ dùng cloud nếu version cloud CAO HƠN local
-    const cloudVer = parseInt(data.version || '0', 10);
-    if(cloudVer > dataVersion){
-      habits      = data.habits      || [];
-      globalTasks = Array.isArray(data.globalTasks) ? data.globalTasks : [];
-      daily       = data.daily       || {};
-      dataVersion = cloudVer;
+    // Dùng cloud nếu timestamp cloud MỚI HƠN local (ms)
+    const cloudTs = parseInt(data.timestamp || '0', 10);
+    if(cloudTs > dataTimestamp){
+      habits        = data.habits      || [];
+      globalTasks   = Array.isArray(data.globalTasks) ? data.globalTasks : [];
+      daily         = data.daily       || {};
+      dataTimestamp = cloudTs;
       Object.keys(daily).forEach(d => ensureDate(d));
       ensureDate(selectedDate);
       saveLocal(); // cập nhật local theo cloud mới hơn
       render();
-      setSyncStatus('✅ Đồng bộ cloud', 2000);
+      setSyncStatus('✅ Đồng bộ từ cloud (' + new Date(cloudTs).toLocaleTimeString('vi-VN') + ')', 3000);
     } else {
-      setSyncStatus('✅ Local mới nhất', 2000);
+      setSyncStatus('✅ Đang dùng bản mới nhất', 2000);
     }
   } catch(e){
     setSyncStatus('⚠️ Không kết nối được cloud', 3000);
@@ -236,8 +236,8 @@ async function cloudLoad(){
    SAVE — luôn local trước, cloud sau
 ═══════════════════════════════════════════ */
 function save(){
-  dataVersion++;    // đánh dấu data mới hơn cloud
-  saveLocal();      // đồng bộ, ngay lập tức
+  dataTimestamp = Date.now(); // timestamp thực — so sánh được giữa 2 thiết bị
+  saveLocal();                // đồng bộ, ngay lập tức
   render();         // cập nhật UI
   cloudSave();      // nền, không await
 }
@@ -246,7 +246,7 @@ function save(){
 // → local ngay, cloud + render SAU khi dừng gõ
 let textSaveTimeout = null;
 function saveText(){
-  dataVersion++;
+  dataTimestamp = Date.now();
   saveLocal();      // local ngay lập tức
   clearTimeout(textSaveTimeout);
   textSaveTimeout = setTimeout(()=>{
