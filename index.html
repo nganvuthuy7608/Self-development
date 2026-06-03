@@ -193,27 +193,38 @@ function loadLocal(){
 /* Cloud sync — chạy nền, KHÔNG block UI */
 async function cloudSave(){
   setSyncStatus('☁️ Đang lưu cloud...');
+  const payload = { habits, globalTasks, daily, timestamp: dataTimestamp };
+  console.log('[CLOUD SAVE] Gửi lên:', JSON.stringify(payload).slice(0,200));
   try {
-    await fetch(API_URL, {
+    const res  = await fetch(API_URL, {
       method : 'POST',
       headers: {'Content-Type':'application/json'},
-      body   : JSON.stringify({ habits, globalTasks, daily, timestamp: dataTimestamp })
+      body   : JSON.stringify(payload)
     });
-    setSyncStatus('✅ Đã lưu', 2000);
+    const txt = await res.text();
+    console.log('[CLOUD SAVE] Response:', txt.slice(0,200));
+    setSyncStatus('✅ Đã lưu cloud', 2000);
   } catch(e){
+    console.error('[CLOUD SAVE] LỖI:', e);
     setSyncStatus('⚠️ Lỗi cloud (dữ liệu đã lưu local)', 3000);
   }
 }
 
 async function cloudLoad(){
+  console.log('[CLOUD LOAD] Bắt đầu fetch, local timestamp:', dataTimestamp);
   try {
     const res  = await fetch(API_URL + '?t=' + Date.now());
     const text = await res.text();
-    if(!text) return;
+    console.log('[CLOUD LOAD] Raw response:', text.slice(0,300));
+    if(!text || text.trim() === '') {
+      console.warn('[CLOUD LOAD] Response rỗng!');
+      setSyncStatus('⚠️ Cloud trả về rỗng', 3000);
+      return;
+    }
     const data = JSON.parse(text);
-
-    // Dùng cloud nếu timestamp cloud MỚI HƠN local (ms)
     const cloudTs = parseInt(data.timestamp || '0', 10);
+    console.log('[CLOUD LOAD] cloudTs:', cloudTs, '| localTs:', dataTimestamp, '| cloud mới hơn:', cloudTs > dataTimestamp);
+
     if(cloudTs > dataTimestamp){
       habits        = data.habits      || [];
       globalTasks   = Array.isArray(data.globalTasks) ? data.globalTasks : [];
@@ -221,13 +232,14 @@ async function cloudLoad(){
       dataTimestamp = cloudTs;
       Object.keys(daily).forEach(d => ensureDate(d));
       ensureDate(selectedDate);
-      saveLocal(); // cập nhật local theo cloud mới hơn
+      saveLocal();
       render();
       setSyncStatus('✅ Đồng bộ từ cloud (' + new Date(cloudTs).toLocaleTimeString('vi-VN') + ')', 3000);
     } else {
-      setSyncStatus('✅ Đang dùng bản mới nhất', 2000);
+      setSyncStatus('✅ Local đã mới nhất (ts=' + dataTimestamp + ')', 2000);
     }
   } catch(e){
+    console.error('[CLOUD LOAD] LỖI:', e);
     setSyncStatus('⚠️ Không kết nối được cloud', 3000);
   }
 }
