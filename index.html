@@ -55,6 +55,87 @@
       background:rgba(0,0,0,0.55); padding:6px 12px; border-radius:20px;
       transition:opacity .4s;
     }
+
+    /* ── TIMELINE NĂM-THÁNG ── */
+    .timeline-wrapper{
+      position:relative; padding-left:24px;
+      border-left:3px solid rgba(255,255,255,0.3);
+      margin-top:10px;
+    }
+    .timeline-period{
+      position:relative; margin-bottom:28px;
+    }
+    .timeline-period::before{
+      content:''; position:absolute; left:-32px; top:6px;
+      width:14px; height:14px; border-radius:50%;
+      background:#6c63ff; border:2px solid #fff;
+      box-shadow:0 0 8px #6c63ff;
+    }
+    .timeline-period-header{
+      display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;
+    }
+    .period-label-input{
+      font-size:1.1rem; font-weight:bold; color:#fff;
+      background:rgba(255,255,255,0.15); border:none; border-radius:8px;
+      padding:6px 12px; width:auto; min-width:160px; flex:1;
+    }
+    .period-label-input:focus{ outline:2px solid #6c63ff; }
+    .btn-del-period{
+      width:auto; padding:5px 10px; background:#ff5c5c; border-radius:8px;
+      font-size:.85rem; flex-shrink:0;
+    }
+    .goal-list{ margin-left:4px; }
+    .goal-item{
+      display:flex; align-items:center; gap:8px; margin:6px 0;
+    }
+    .goal-item input[type=text]{
+      flex:1; background:rgba(255,255,255,0.1); border:none;
+      border-radius:8px; padding:7px 10px; color:#fff; font-size:.95rem; margin:0;
+    }
+    .goal-item input[type=text]:focus{ outline:2px solid #6c63ff; }
+    .btn-del-goal{
+      width:auto; padding:4px 9px; background:#ff5c5c; border-radius:7px;
+      font-size:.8rem; flex-shrink:0;
+    }
+    .btn-add-goal{
+      width:auto; padding:5px 12px; background:#4caf50; border-radius:8px;
+      font-size:.85rem; margin-top:6px;
+    }
+    .btn-add-period{
+      background:#6c63ff; width:auto; padding:8px 16px; border-radius:10px;
+      margin-top:8px; font-size:.95rem;
+    }
+
+    /* ── BẢNG LỊCH TRÌNH HÀNG NGÀY ── */
+    .schedule-table{
+      width:100%; border-collapse:collapse; margin-top:10px;
+    }
+    .schedule-table th{
+      background:rgba(108,99,255,0.55); padding:10px 14px;
+      text-align:left; font-size:.95rem; border-bottom:2px solid rgba(255,255,255,0.2);
+    }
+    .schedule-table td{
+      padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.1);
+      vertical-align:middle;
+    }
+    .schedule-table tr:hover td{ background:rgba(255,255,255,0.06); }
+    .sched-input{
+      background:transparent; border:none; color:#fff;
+      font-size:.95rem; padding:6px 8px; width:100%; margin:0; border-radius:6px;
+    }
+    .sched-input:focus{ outline:2px solid #6c63ff; background:rgba(255,255,255,0.08); }
+    .btn-del-row{
+      width:auto; padding:4px 9px; background:#ff5c5c; border-radius:7px; font-size:.8rem;
+    }
+    .btn-add-row{
+      background:#4caf50; width:auto; padding:7px 14px; border-radius:9px;
+      font-size:.9rem; margin-top:10px;
+    }
+    .drag-handle{
+      cursor:grab; font-size:1.1rem; opacity:.6; user-select:none; padding:0 4px;
+    }
+    .drag-handle:active{ cursor:grabbing; }
+    .schedule-table tr.dragging{ opacity:.4; }
   </style>
 </head>
 <body>
@@ -93,6 +174,32 @@
     🎉 BẠN ĐÃ ĐẠT 80% HIỆU SUẤT TRONG NGÀY. BẠN THẬT GIỎI. NGÀY HÔM NAY CỦA BẠN THẬT NĂNG SUẤT. HÃY DUY TRÌ NHÉ! 🎉
   </div>
 
+  <!-- ══ TIMELINE NĂM-THÁNG ══ -->
+  <div class="card">
+    <h2>🗓️ Timeline Mục Tiêu</h2>
+    <p style="opacity:.75;font-size:.9rem;margin-top:0">Thêm các giai đoạn thời gian và liệt kê goal bạn cần tập trung trong giai đoạn đó.</p>
+    <div class="timeline-wrapper" id="timelineContainer"></div>
+    <button class="btn-add-period" onclick="addPeriod()">+ Thêm giai đoạn</button>
+  </div>
+
+  <!-- ══ BẢNG LỊCH TRÌNH HÀNG NGÀY ══ -->
+  <div class="card">
+    <h2>⏰ Lịch Trình Hoạt Động Hàng Ngày</h2>
+    <p style="opacity:.75;font-size:.9rem;margin-top:0">Kéo thả ☰ để sắp xếp lại thứ tự. Click vào ô để chỉnh sửa.</p>
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th style="width:32px"></th>
+          <th style="width:160px">Thời gian</th>
+          <th>Hoạt động</th>
+          <th style="width:50px"></th>
+        </tr>
+      </thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+    <button class="btn-add-row" onclick="addScheduleRow()">+ Thêm khung giờ</button>
+  </div>
+
   <div class="card">
     <h2>Nay mình học gì</h2>
     <div id="studyContainer"></div>
@@ -119,18 +226,22 @@
 const VN      = 'Asia/Ho_Chi_Minh';
 const API_URL = 'https://script.google.com/macros/s/AKfycbwHEhkfP3cMk3IBo2noz99HwgI-M3cknAfUVYuMp0f6IiiDF5D_n9DqWALTyhPMuYn7/exec';
 
-const LS_HABITS = 'habits';
-const LS_GTASKS = 'globalTasks';
-const LS_DAILY  = 'dailyData';
-const LS_TS     = 'dataTimestamp'; // unix ms — thiết bị nào save sau thì thắng
+const LS_HABITS    = 'habits';
+const LS_GTASKS    = 'globalTasks';
+const LS_DAILY     = 'dailyData';
+const LS_TS        = 'dataTimestamp';
+const LS_TIMELINE  = 'timelinePeriods';
+const LS_SCHEDULE  = 'scheduleRows';
 
 /* ═══════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════ */
-let habits        = [];
-let globalTasks   = [];
-let daily         = {};
-let dataTimestamp = 0; // unix ms của lần save gần nhất
+let habits          = [];
+let globalTasks     = [];
+let daily           = {};
+let dataTimestamp   = 0;
+let timelinePeriods = [];   // [{label, goals:[str]}]
+let scheduleRows    = [];   // [{time, activity}]
 
 const today = getTodayKey();
 let selectedDate = today;
@@ -150,11 +261,9 @@ function nowVN(){
    DATA HELPERS
 ═══════════════════════════════════════════ */
 function createStudyBlock(){ return { topic:'', sources:[''] }; }
-
 function createEmptyDay(){
   return { tasks:[], checked:{}, studyItems:[createStudyBlock()], bookRead:'', notes:'' };
 }
-
 function ensureDate(date){
   if(!daily[date])                           daily[date] = createEmptyDay();
   if(!daily[date].tasks)                     daily[date].tasks = [];
@@ -165,71 +274,65 @@ function ensureDate(date){
 }
 
 /* ═══════════════════════════════════════════
-   STORAGE — localStorage là nguồn chính
+   STORAGE
 ═══════════════════════════════════════════ */
 function saveLocal(){
-  // Ghi ĐỒNG BỘ (synchronous) — không async, không bỏ sót
   try {
-    localStorage.setItem(LS_HABITS, JSON.stringify(habits));
-    localStorage.setItem(LS_GTASKS, JSON.stringify(globalTasks));
-    localStorage.setItem(LS_DAILY,  JSON.stringify(daily));
-    localStorage.setItem(LS_TS,     String(dataTimestamp));
+    localStorage.setItem(LS_HABITS,   JSON.stringify(habits));
+    localStorage.setItem(LS_GTASKS,   JSON.stringify(globalTasks));
+    localStorage.setItem(LS_DAILY,    JSON.stringify(daily));
+    localStorage.setItem(LS_TS,       String(dataTimestamp));
+    localStorage.setItem(LS_TIMELINE, JSON.stringify(timelinePeriods));
+    localStorage.setItem(LS_SCHEDULE, JSON.stringify(scheduleRows));
   } catch(e){ console.error('saveLocal error', e); }
 }
 
 function loadLocal(){
   try {
-    habits         = JSON.parse(localStorage.getItem(LS_HABITS) || '[]');
-    globalTasks    = JSON.parse(localStorage.getItem(LS_GTASKS) || '[]');
-    daily          = JSON.parse(localStorage.getItem(LS_DAILY)  || '{}');
-    dataTimestamp  = parseInt(localStorage.getItem(LS_TS)       || '0', 10);
+    habits          = JSON.parse(localStorage.getItem(LS_HABITS)   || '[]');
+    globalTasks     = JSON.parse(localStorage.getItem(LS_GTASKS)   || '[]');
+    daily           = JSON.parse(localStorage.getItem(LS_DAILY)    || '{}');
+    dataTimestamp   = parseInt(localStorage.getItem(LS_TS)         || '0', 10);
+    timelinePeriods = JSON.parse(localStorage.getItem(LS_TIMELINE) || '[]');
+    scheduleRows    = JSON.parse(localStorage.getItem(LS_SCHEDULE) || '[]');
   } catch(e){
-    habits = []; globalTasks = []; daily = {}; dataTimestamp = 0;
+    habits=[]; globalTasks=[]; daily={}; dataTimestamp=0; timelinePeriods=[]; scheduleRows=[];
   }
   Object.keys(daily).forEach(d => ensureDate(d));
   ensureDate(selectedDate);
+  if(timelinePeriods.length === 0) timelinePeriods = [{label:'2025 - Tháng 1 → 6', goals:['Ví dụ: Hoàn thành khóa học X','Ví dụ: Đọc 6 cuốn sách']}];
+  if(scheduleRows.length === 0)    scheduleRows    = [{time:'05:00 - 06:00', activity:'Thức dậy, thiền, tập thể dục'},{time:'06:00 - 07:00', activity:'Đọc sách'}];
 }
 
-/* Cloud sync — chạy nền, KHÔNG block UI */
+/* Cloud sync */
 async function cloudSave(){
   setSyncStatus('☁️ Đang lưu cloud...');
-  const payload = { habits, globalTasks, daily, timestamp: dataTimestamp };
+  const payload = { habits, globalTasks, daily, timestamp: dataTimestamp, timelinePeriods, scheduleRows };
   const json    = JSON.stringify(payload);
-  console.log('[CLOUD SAVE] Gửi lên, size:', json.length, 'bytes');
   try {
-    // Dùng GET + encodeURIComponent để tránh CORS block (POST bị chặn bởi Apps Script)
     const url = API_URL + '?data=' + encodeURIComponent(json);
     const res = await fetch(url);
-    const txt = await res.text();
-    console.log('[CLOUD SAVE] Response:', txt.slice(0,100));
+    await res.text();
     setSyncStatus('✅ Đã lưu cloud', 2000);
   } catch(e){
-    console.error('[CLOUD SAVE] LỖI:', e);
     setSyncStatus('⚠️ Lỗi cloud (đã lưu local)', 3000);
   }
 }
 
 async function cloudLoad(){
-  console.log('[CLOUD LOAD] Fetch, localTs:', dataTimestamp);
   try {
     const res  = await fetch(API_URL + '?t=' + Date.now());
     const text = await res.text();
-    console.log('[CLOUD LOAD] Response:', text.slice(0,200));
-    if(!text || text.trim() === '{}' || text.trim() === '') {
-      setSyncStatus('⚠️ Cloud chưa có dữ liệu', 2000);
-      return;
-    }
+    if(!text || text.trim() === '{}' || text.trim() === '') { setSyncStatus('⚠️ Cloud chưa có dữ liệu', 2000); return; }
     const data    = JSON.parse(text);
     const cloudTs = parseInt(data.timestamp || '0', 10);
-    console.log('[CLOUD LOAD] cloudTs:', cloudTs, '| localTs:', dataTimestamp);
-
-    // Nhận cloud nếu cloud mới hơn local
-    // Trường hợp cả 2 = 0 (thiết bị mới chưa từng save) thì cũng nhận cloud
     if(cloudTs >= dataTimestamp){
-      habits        = data.habits      || [];
-      globalTasks   = Array.isArray(data.globalTasks) ? data.globalTasks : [];
-      daily         = data.daily       || {};
-      dataTimestamp = cloudTs;
+      habits          = data.habits           || [];
+      globalTasks     = Array.isArray(data.globalTasks) ? data.globalTasks : [];
+      daily           = data.daily            || {};
+      dataTimestamp   = cloudTs;
+      timelinePeriods = data.timelinePeriods  || timelinePeriods;
+      scheduleRows    = data.scheduleRows     || scheduleRows;
       Object.keys(daily).forEach(d => ensureDate(d));
       ensureDate(selectedDate);
       saveLocal();
@@ -238,53 +341,38 @@ async function cloudLoad(){
       setSyncStatus('✅ Đồng bộ cloud (' + timeStr + ')', 3000);
     } else {
       setSyncStatus('✅ Local mới hơn cloud, đang đẩy lên...', 1000);
-      cloudSave(); // local mới hơn → đẩy lên cloud luôn
+      cloudSave();
     }
   } catch(e){
-    console.error('[CLOUD LOAD] LỖI:', e);
     setSyncStatus('⚠️ Không kết nối được cloud', 3000);
   }
 }
 
-/* ═══════════════════════════════════════════
-   SAVE — luôn local trước, cloud sau
-═══════════════════════════════════════════ */
 function save(){
-  dataTimestamp = Date.now(); // timestamp thực — so sánh được giữa 2 thiết bị
-  saveLocal();                // đồng bộ, ngay lập tức
-  render();         // cập nhật UI
-  cloudSave();      // nền, không await
+  dataTimestamp = Date.now();
+  saveLocal();
+  render();
+  cloudSave();
 }
 
-// Dùng cho các trường đang gõ liên tục (textarea)
-// → local ngay, cloud + render SAU khi dừng gõ
 let textSaveTimeout = null;
 function saveText(){
   dataTimestamp = Date.now();
-  saveLocal();      // local ngay lập tức
+  saveLocal();
   clearTimeout(textSaveTimeout);
-  textSaveTimeout = setTimeout(()=>{
-    cloudSave();    // cloud sau 1s dừng gõ
-  }, 1000);
-  // KHÔNG render() để tránh reset con trỏ textarea
+  textSaveTimeout = setTimeout(()=>{ cloudSave(); }, 1000);
 }
 
-/* ═══════════════════════════════════════════
-   SYNC STATUS BADGE
-═══════════════════════════════════════════ */
 let statusTimeout = null;
 function setSyncStatus(msg, hideAfterMs){
   const el = document.getElementById('syncStatus');
-  el.textContent = msg;
-  el.style.opacity = '1';
+  el.textContent = msg; el.style.opacity = '1';
   clearTimeout(statusTimeout);
-  if(hideAfterMs){
-    statusTimeout = setTimeout(()=>{ el.style.opacity = '0'; }, hideAfterMs);
-  }
+  if(hideAfterMs) statusTimeout = setTimeout(()=>{ el.style.opacity='0'; }, hideAfterMs);
 }
 
 /* ═══════════════════════════════════════════
-   ACTIONS
+   ACTIONS — Habit / GlobalTask / Task / Study
 ═══════════════════════════════════════════ */
 function addHabit(){
   const v = document.getElementById('habitInput').value.trim();
@@ -293,7 +381,6 @@ function addHabit(){
   document.getElementById('habitInput').value = '';
   save();
 }
-
 function addGlobalTask(){
   const title  = document.getElementById('globalTaskInput').value.trim();
   const source = document.getElementById('globalTaskSource').value.trim();
@@ -303,7 +390,6 @@ function addGlobalTask(){
   document.getElementById('globalTaskSource').value = '';
   save();
 }
-
 function addTask(){
   ensureDate(selectedDate);
   const v = document.getElementById('taskInput').value.trim();
@@ -312,49 +398,35 @@ function addTask(){
   document.getElementById('taskInput').value = '';
   save();
 }
-
 function toggle(key){
   ensureDate(selectedDate);
   daily[selectedDate].checked[key] = !daily[selectedDate].checked[key];
   save();
 }
-
 function removeTask(i){
   ensureDate(selectedDate);
   daily[selectedDate].tasks.splice(i,1);
   delete daily[selectedDate].checked['task_'+i];
   save();
 }
-
-function removeHabit(i){
-  habits.splice(i,1);
-  save();
-}
-
-function removeGlobalTask(i){
-  globalTasks.splice(i,1);
-  save();
-}
-
+function removeHabit(i){ habits.splice(i,1); save(); }
+function removeGlobalTask(i){ globalTasks.splice(i,1); save(); }
 function addStudyBlock(){
   ensureDate(selectedDate);
   daily[selectedDate].studyItems.push(createStudyBlock());
   save();
 }
-
 function removeStudyBlock(index){
   ensureDate(selectedDate);
   if(daily[selectedDate].studyItems.length === 1) return;
   daily[selectedDate].studyItems.splice(index,1);
   save();
 }
-
 function addSource(studyIndex){
   ensureDate(selectedDate);
   daily[selectedDate].studyItems[studyIndex].sources.push('');
   save();
 }
-
 function removeSource(studyIndex, sourceIndex){
   ensureDate(selectedDate);
   const sources = daily[selectedDate].studyItems[studyIndex].sources;
@@ -362,13 +434,11 @@ function removeSource(studyIndex, sourceIndex){
   sources.splice(sourceIndex,1);
   save();
 }
-
 function updateStudyTopic(index, value){
   ensureDate(selectedDate);
   daily[selectedDate].studyItems[index].topic = value;
   saveText();
 }
-
 function updateSource(studyIndex, sourceIndex, value){
   ensureDate(selectedDate);
   daily[selectedDate].studyItems[studyIndex].sources[sourceIndex] = value;
@@ -376,24 +446,85 @@ function updateSource(studyIndex, sourceIndex, value){
 }
 
 /* ═══════════════════════════════════════════
-   INPUT LISTENERS (bookRead, notes)
+   TIMELINE ACTIONS
+═══════════════════════════════════════════ */
+function addPeriod(){
+  timelinePeriods.push({label:'', goals:['']});
+  save();
+}
+function removePeriod(i){
+  timelinePeriods.splice(i,1);
+  save();
+}
+function updatePeriodLabel(i, value){
+  timelinePeriods[i].label = value;
+  saveText();
+}
+function addGoal(pi){
+  timelinePeriods[pi].goals.push('');
+  save();
+}
+function removeGoal(pi, gi){
+  timelinePeriods[pi].goals.splice(gi,1);
+  if(timelinePeriods[pi].goals.length === 0) timelinePeriods[pi].goals = [''];
+  save();
+}
+function updateGoal(pi, gi, value){
+  timelinePeriods[pi].goals[gi] = value;
+  saveText();
+}
+
+/* ═══════════════════════════════════════════
+   SCHEDULE ACTIONS
+═══════════════════════════════════════════ */
+function addScheduleRow(){
+  scheduleRows.push({time:'', activity:''});
+  save();
+}
+function removeScheduleRow(i){
+  scheduleRows.splice(i,1);
+  save();
+}
+function updateScheduleTime(i, value){
+  scheduleRows[i].time = value;
+  saveText();
+}
+function updateScheduleActivity(i, value){
+  scheduleRows[i].activity = value;
+  saveText();
+}
+
+/* ─── Drag-and-drop for schedule table ─── */
+let dragSrcIndex = null;
+
+function onDragStart(e, i){
+  dragSrcIndex = i;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.closest('tr').classList.add('dragging');
+}
+function onDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function onDrop(e, i){
+  e.preventDefault();
+  if(dragSrcIndex === null || dragSrcIndex === i) return;
+  const moved = scheduleRows.splice(dragSrcIndex, 1)[0];
+  scheduleRows.splice(i, 0, moved);
+  dragSrcIndex = null;
+  save();
+}
+function onDragEnd(e){
+  dragSrcIndex = null;
+  document.querySelectorAll('.schedule-table tr.dragging').forEach(r=>r.classList.remove('dragging'));
+}
+
+/* ═══════════════════════════════════════════
+   INPUT LISTENERS
 ═══════════════════════════════════════════ */
 document.addEventListener('input', e => {
   ensureDate(selectedDate);
-  if(e.target.id === 'bookRead'){
-    daily[selectedDate].bookRead = e.target.value;
-    saveText();
-  }
-  if(e.target.id === 'notes'){
-    daily[selectedDate].notes = e.target.value;
-    saveText();
-  }
+  if(e.target.id === 'bookRead'){ daily[selectedDate].bookRead = e.target.value; saveText(); }
+  if(e.target.id === 'notes'){    daily[selectedDate].notes    = e.target.value; saveText(); }
 });
-
-/* Force-save local trước khi tab đóng / reload */
-window.addEventListener('beforeunload', () => {
-  saveLocal();
-});
+window.addEventListener('beforeunload', () => { saveLocal(); });
 
 /* ═══════════════════════════════════════════
    HISTORY
@@ -413,8 +544,129 @@ function formatUrl(url){
 }
 
 /* ═══════════════════════════════════════════
-   RENDER STUDY ITEMS (dùng DOM thay innerHTML
-   để textarea không bị reset khi đang gõ)
+   RENDER TIMELINE
+═══════════════════════════════════════════ */
+function renderTimeline(){
+  const container = document.getElementById('timelineContainer');
+  container.innerHTML = '';
+  timelinePeriods.forEach((period, pi) => {
+    const div = document.createElement('div');
+    div.className = 'timeline-period';
+
+    const header = document.createElement('div');
+    header.className = 'timeline-period-header';
+
+    const labelInput = document.createElement('input');
+    labelInput.className = 'period-label-input';
+    labelInput.type = 'text';
+    labelInput.placeholder = 'VD: 2025 – Tháng 1 → 6';
+    labelInput.value = period.label;
+    labelInput.oninput = () => updatePeriodLabel(pi, labelInput.value);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-del-period';
+    delBtn.textContent = 'Xóa giai đoạn';
+    delBtn.onclick = () => removePeriod(pi);
+
+    header.appendChild(labelInput);
+    header.appendChild(delBtn);
+    div.appendChild(header);
+
+    const goalList = document.createElement('div');
+    goalList.className = 'goal-list';
+
+    period.goals.forEach((goal, gi) => {
+      const row = document.createElement('div');
+      row.className = 'goal-item';
+
+      const bullet = document.createElement('span');
+      bullet.textContent = '🎯';
+      bullet.style.flexShrink = '0';
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.placeholder = 'Nhập mục tiêu cần đạt...';
+      inp.value = goal;
+      inp.oninput = () => updateGoal(pi, gi, inp.value);
+
+      const xBtn = document.createElement('button');
+      xBtn.className = 'btn-del-goal';
+      xBtn.textContent = 'X';
+      xBtn.onclick = () => removeGoal(pi, gi);
+
+      row.appendChild(bullet);
+      row.appendChild(inp);
+      row.appendChild(xBtn);
+      goalList.appendChild(row);
+    });
+
+    const addGoalBtn = document.createElement('button');
+    addGoalBtn.className = 'btn-add-goal';
+    addGoalBtn.textContent = '+ Thêm mục tiêu';
+    addGoalBtn.onclick = () => addGoal(pi);
+    goalList.appendChild(addGoalBtn);
+
+    div.appendChild(goalList);
+    container.appendChild(div);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   RENDER SCHEDULE TABLE
+═══════════════════════════════════════════ */
+function renderSchedule(){
+  const tbody = document.getElementById('scheduleBody');
+  tbody.innerHTML = '';
+  scheduleRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.addEventListener('dragstart',  e => onDragStart(e, i));
+    tr.addEventListener('dragover',   onDragOver);
+    tr.addEventListener('drop',       e => onDrop(e, i));
+    tr.addEventListener('dragend',    onDragEnd);
+
+    // handle
+    const tdHandle = document.createElement('td');
+    tdHandle.innerHTML = '<span class="drag-handle">☰</span>';
+
+    // time
+    const tdTime = document.createElement('td');
+    const timeInp = document.createElement('input');
+    timeInp.className = 'sched-input';
+    timeInp.type = 'text';
+    timeInp.placeholder = 'VD: 05:00 - 06:00';
+    timeInp.value = row.time;
+    timeInp.oninput = () => updateScheduleTime(i, timeInp.value);
+    tdTime.appendChild(timeInp);
+
+    // activity
+    const tdAct = document.createElement('td');
+    const actInp = document.createElement('input');
+    actInp.className = 'sched-input';
+    actInp.type = 'text';
+    actInp.placeholder = 'Hoạt động...';
+    actInp.value = row.activity;
+    actInp.oninput = () => updateScheduleActivity(i, actInp.value);
+    tdAct.appendChild(actInp);
+
+    // delete
+    const tdDel = document.createElement('td');
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-del-row';
+    delBtn.textContent = 'X';
+    delBtn.onclick = () => removeScheduleRow(i);
+    tdDel.appendChild(delBtn);
+
+    tr.appendChild(tdHandle);
+    tr.appendChild(tdTime);
+    tr.appendChild(tdAct);
+    tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   RENDER STUDY ITEMS
 ═══════════════════════════════════════════ */
 function renderStudyItems(){
   const container = document.getElementById('studyContainer');
@@ -537,10 +789,16 @@ function render(){
       </div>`;
   });
 
+  /* Timeline */
+  renderTimeline();
+
+  /* Schedule */
+  renderSchedule();
+
   /* Study */
   renderStudyItems();
 
-  /* bookRead & notes — không ghi đè ô đang focus */
+  /* bookRead & notes */
   const bookEl  = document.getElementById('bookRead');
   const notesEl = document.getElementById('notes');
   if(document.activeElement !== bookEl)  bookEl.value  = daily[selectedDate].bookRead || '';
@@ -554,32 +812,15 @@ function render(){
 /* ═══════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════ */
-// 1. Load local NGAY (đồng bộ) → UI hiện liền, không chờ mạng
 loadLocal();
 render();
 setSyncStatus('📡 Đang đồng bộ cloud...');
-
-// 2. Load cloud NGOÀI NỀN → chỉ cập nhật nếu cloud mới hơn
 cloudLoad();
 
-// 3. Mỗi khi tab/app được focus lại (user chuyển app trên mobile rồi quay lại)
-//    → pull cloud để lấy data mới nhất từ thiết bị kia
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible'){
-    setSyncStatus('📡 Đang đồng bộ...');
-    cloudLoad();
-  }
+  if(document.visibilityState === 'visible'){ setSyncStatus('📡 Đang đồng bộ...'); cloudLoad(); }
 });
-
-// 4. Polling mỗi 30s — đảm bảo sync kể cả khi visibilitychange không fire
-//    (một số trình duyệt mobile không fire event này đúng lúc)
-setInterval(() => {
-  if(document.visibilityState === 'visible'){
-    cloudLoad();
-  }
-}, 30000);
-
-// Clock
+setInterval(() => { if(document.visibilityState === 'visible') cloudLoad(); }, 30000);
 setInterval(()=>{
   document.getElementById('today').innerText =
     'Giờ Việt Nam: ' + nowVN() + ' | Đang xem dữ liệu ngày: ' + selectedDate;
